@@ -219,6 +219,7 @@ Some Laravel methods have another name or another way here:
 | `reduceWithKeys` | `KeyedCollection.Reduce` |
 | `sort($callback)`, `sortKeysUsing`, `diffUsing`, `intersectUsing` | `SortFunc`, `SortKeysFunc`, `DiffFunc`, `IntersectFunc` |
 | `value('name')`, `firstWhere('name', 'x')` | `Map(f).First()`, `FirstWhere(func...)` |
+| `isEmpty()`, `isNotEmpty()` | The `bool` of `First()`: `_, ok := c.First()` |
 | `collapse()`, `flatten(1)` | `FlatMap(collect.FromSlice)`, `FlatMap(collect.Identity)` |
 | `toArray()`, `getIterator()`, `toJson()`, `toPrettyJson()` | `All()`, `Seq()`, `json.Marshal(c)`, `json.Marshal(c, jsontext.WithIndent("  "))` |
 | `make`, `wrap`, `empty`, `fromJson` | `Of`, `FromSlice`, the zero value, `json.Unmarshal` then `FromSlice` |
@@ -235,7 +236,7 @@ These have no Go equivalent, and are not here:
 | `diffAssocUsing`, `diffKeysUsing`, `intersectAssocUsing` | Go keys are comparable |
 | `select`, `escapeWhenCastingToString`, `getCachingIterator` | PHP's arrays and strings |
 | `withHeartbeat`, `throttle`, `takeUntilTimeout` | They look at the clock only when a value comes, so a slow source stops nothing. A Go program times work with `context`, `time.Ticker` or `golang.org/x/time/rate` |
-| `whenEmpty`, `whenNotEmpty`, `unlessEmpty`, `unlessNotEmpty` | They read the first value twice, which breaks a source that can be read once. Write `if c.IsEmpty()` |
+| `whenEmpty`, `whenNotEmpty`, `unlessEmpty`, `unlessNotEmpty` | They read the first value twice, which breaks a source that can be read once. Use `First()`, which returns the value it reads |
 | `tap` | To see the whole collection, it must read the source, which may then be empty for the rest of the chain. `TapEach` sees each value lazily. Use `Pipe` to call a function in a chain |
 | `reduceInto` | PHP copies an array that a callback returns, so Laravel passes the result by reference. A Go map or slice shares its contents, so `Reduce` does the same |
 

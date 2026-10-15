@@ -116,6 +116,7 @@ declscope runs with `.declscope.yaml` (`qualify: ondemand`, `exported: true`).
 | `Sum`, `Unique`, `Implode` and the like, with no `By` | They took a key function as `SortBy` and `GroupBy` do, under another kind of name. Every method that takes a key ends in `By`, as in samber/lo. |
 | `WithHeartbeat`, `Throttle`, `TakeUntilTimeout` | They looked at the clock only when a value came, so a slow source delayed every beat and every deadline. `Throttle` slept inside the iterator, which no `context` could stop. |
 | `WhenEmpty`, `WhenNotEmpty` | Deciding when read meant reading the first value twice: a source that can be read once lost it. Deciding when called would read the source early. |
+| `IsEmpty`, `IsNotEmpty` | They were `_, ok := c.First()` under other names, and they read the first value only to drop it. With a source that can be read once, that value was lost. `First()` returns the value it reads. |
 | `Tap` | It called its function with the collection when called. Any look at the whole, such as `Count()`, read the source early. A source that can be read once was then empty for the rest of the chain. `TapEach` sees each value lazily, and `Pipe` calls a function in a chain. |
 | `ReduceInto` | It passed the result by pointer, as Laravel passes it by reference, because PHP copies arrays. A Go map or slice shares its contents, so `Reduce` does the same with no `(*m)[k]`. |
 | `Pluck("user.name")` and other string paths | They need reflection, and lose the types. Pass a function to `Map`. |
