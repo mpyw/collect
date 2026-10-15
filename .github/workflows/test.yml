@@ -1,0 +1,54 @@
+name: test
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # collect is pure Go with no OS-specific code, so one OS is enough.
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # id-token: write lets the Codecov upload authenticate as this run,
+    # with no stored token. A job's permissions replace the workflow's, so
+    # contents: read is restated.
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: jdx/mise-action@v4
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test with coverage and the race detector
+        run: go test -race -count=1 -covermode=atomic -coverprofile=coverage.txt ./...
+
+      # Codecov being unreachable is no reason to fail the run.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          files: ./coverage.txt
+          use_oidc: true
+        continue-on-error: true
+
+      - name: Lint
+        run: |
+          mise exec -- golangci-lint run ./...
+          mise exec -- declscope shrink ./...
+          mise exec -- declscope ./...
