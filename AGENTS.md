@@ -8,6 +8,7 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 
 - Every operation is lazy unless it is a terminal one (`All`, `Count`, `First`, `SumBy` and the like). A lazy method returns a new value whose sequence runs only when read.
 - A method that must read every value first, such as `SortBy` or `GroupBy`, does so when its result is read, not when it is called. Only `Eager`, `Ensure`, `Combine` and `RandomN` read when called, as their names or results say.
+- A read of a result reads the source at most once. A method with two results reads once for both and keeps them, as `Partition` does. A method that repeats keeps what it read, as `Multiply` does. Laravel reads them once too.
 - Every loop over a source returns as soon as `yield` returns false. Each lazy method's test calls `assertStopsEarly` or `assertStopsEarly2` on an endless source, for every type that has the method.
 - `Of` copies its arguments. A chunk, a window or a group gets slices of its own. A value a caller holds never changes when the source does.
 - `FromSlice` and `FromMap` do not copy, on purpose: they are the way to read a large slice or map without one. Do not add a copy to them. A source that copies has no reason to exist beside `Of`.
@@ -46,7 +47,7 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 
 ### Names
 
-- A Laravel alias is not ported: `average`, `some`, `containsOneItem`, `containsManyItems` and the like. List it in the README's table of other names instead.
+- A Laravel alias is not ported: `average`, `some`, `containsOneItem` and the like. List it in the README's table of other names instead.
 - The exception is a name Go users expect: `JoinBy` is `ImplodeBy`, under the name of `strings.Join`. Laravel's `join` with a final glue is `JoinFinalBy`.
 - A method whose function returns a key, to compare, order, group or add up, ends in `By`: `SumBy`, `UniqueBy`, `SortBy`, `ImplodeBy`, `WhereInBy`. It is the method that `Identity` turns into Laravel's form with no key. A method whose function returns a bool or a new value has no suffix: `Filter`, `Map`.
 - A method whose function compares two values ends in `Func`, as in the standard library: `sort($callback)` is `SortFunc`, `diffUsing` is `DiffFunc`.
@@ -117,6 +118,8 @@ declscope runs with `.declscope.yaml` (`qualify: ondemand`, `exported: true`).
 | `WithHeartbeat`, `Throttle`, `TakeUntilTimeout` | They looked at the clock only when a value came, so a slow source delayed every beat and every deadline. `Throttle` slept inside the iterator, which no `context` could stop. |
 | `WhenEmpty`, `WhenNotEmpty` | Deciding when read meant reading the first value twice: a source that can be read once lost it. Deciding when called would read the source early. |
 | `IsEmpty`, `IsNotEmpty` | They were `_, ok := c.First()` under other names, and they read the first value only to drop it. With a source that can be read once, that value was lost. `First()` returns the value it reads. |
+| `HasSole`, `HasMany` | Like `IsEmpty`, they read up to two values only to drop them. `Sole()` returns the value with its error, and `Take(2).Count() == 2` asks for many. |
+| `Partition` returning two `Filter`s, and `Multiply` reading the source `n` times | A source that can be read once gave an empty second half, or a single copy. |
 | `Tap` | It called its function with the collection when called. Any look at the whole, such as `Count()`, read the source early. A source that can be read once was then empty for the rest of the chain. `TapEach` sees each value lazily, and `Pipe` calls a function in a chain. |
 | `ReduceInto` | It passed the result by pointer, as Laravel passes it by reference, because PHP copies arrays. A Go map or slice shares its contents, so `Reduce` does the same with no `(*m)[k]`. |
 | `Pluck("user.name")` and other string paths | They need reflection, and lose the types. Pass a function to `Map`. |

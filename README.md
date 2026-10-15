@@ -87,6 +87,7 @@ They are still lazy: they read when the result is read, not when they are called
 | --- | --- |
 | `SortBy`, `SortFunc`, `Reverse`, `Shuffle` | The first value is known only at the end |
 | `GroupBy`, `CountBy`, `MapToGroups` | A group is complete only at the end |
+| `Partition` | It reads once for both of its results, and keeps them |
 | `Take(-n)`, `Slice` with a negative value, `Pad(-n, v)`, `Split`, `SplitIn` | They count from the end |
 | `DiffBy`, `IntersectBy` and the like | They read the other collection whole |
 
@@ -213,7 +214,9 @@ Some Laravel methods have another name or another way here:
 
 | Laravel | collect |
 | --- | --- |
-| `average`, `some`, `containsOneItem`, `containsManyItems` | `AvgBy`, `Contains`, `HasSole`, `HasMany` |
+| `average`, `some` | `AvgBy`, `Contains` |
+| `hasSole()`, `containsOneItem()` | The error of `Sole()`, which returns the value too |
+| `hasMany()`, `containsManyItems()` | `c.Take(2).Count() == 2` |
 | `merge` | `Concat` for a `Collection`, `Replace` for a `KeyedCollection` |
 | `mapToDictionary` | `MapToGroups` |
 | `reduceWithKeys` | `KeyedCollection.Reduce` |

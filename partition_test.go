@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/mpyw/collect"
 )
@@ -19,4 +20,25 @@ func ExampleKeyedCollection_Partition() {
 
 	fmt.Println(even.Keys().All(), odd.Keys().All())
 	// Output: [0 2] [1]
+}
+
+// Partition reads the collection once, so a source that can be read once
+// fills both halves.
+func TestPartitionReadsOnce(t *testing.T) {
+	small, big := once(1, 2, 3, 4).Partition(func(v int) bool { return v < 3 })
+	assertEqual(t, big.All(), []int{3, 4})
+	assertEqual(t, small.All(), []int{1, 2})
+	assertEqual(t, small.All(), []int{1, 2})
+	even, odd := once("a", "b", "c").Keyed().Partition(func(k int, _ string) bool { return k%2 == 0 })
+	assertPairs(t, odd, []int{1}, []string{"b"})
+	assertPairs(t, even, []int{0, 2}, []string{"a", "c"})
+}
+
+func TestPartitionStopsEarly(t *testing.T) {
+	in, out := collect.Range(1, 9).Partition(func(v int) bool { return v%2 == 0 })
+	assertStopsEarly(t, out.Seq())
+	assertStopsEarly(t, in.Seq())
+	kin, kout := collect.Range(1, 9).Keyed().Partition(func(k, _ int) bool { return k%2 == 0 })
+	assertStopsEarly2(t, kin.Seq())
+	assertStopsEarly2(t, kout.Seq())
 }
