@@ -115,8 +115,8 @@ They are still lazy: they read when the result is read, not when they are called
 
 | Reads every value first | Why |
 | --- | --- |
-| [`SortBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SortBy), [`SortFunc`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SortFunc), [`Reverse`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Reverse), [`Shuffle`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Shuffle) | The first value is known only at the end |
-| [`GroupBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.GroupBy), [`CountBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CountBy), [`MapToGroups`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MapToGroups) | A group is complete only at the end |
+| [`SortBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SortBy), [`SortByDesc`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SortByDesc), [`SortFunc`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SortFunc), [`SortKeysBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysBy) and the like, [`Reverse`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Reverse), [`Shuffle`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Shuffle) | The first value is known only at the end |
+| [`GroupBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.GroupBy), [`CountBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CountBy), [`ModeBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.ModeBy), [`MapToGroups`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MapToGroups) | A group is complete only at the end |
 | [`Partition`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Partition) | It reads once for both of its results, and keeps them |
 | [`Take(-n)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Take), [`Slice`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Slice) with a negative value, [`Pad(-n, v)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Pad), [`Split`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Split), [`SplitIn`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SplitIn) | They count from the end |
 | [`DiffBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.DiffBy), [`IntersectBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IntersectBy) and the like | They read the other collection whole |
@@ -156,7 +156,7 @@ prices.SortBy(collect.Key).ToMap()         // map[chair:100 desk:200], in no ord
 > Use [`Entries().All()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Entries) or [`Keys().All()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Keys) to keep the order.
 
 A function that a method also applies to another collection takes only what it compares, so [`Identity`](https://pkg.go.dev/github.com/mpyw/collect#Identity) fits it.
-[`DiffBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.DiffBy), [`IntersectBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IntersectBy), [`DiffAssocBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffAssocBy), [`IntersectAssocBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.IntersectAssocBy) and [`FlipBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.FlipBy) take a value, and [`SortKeysBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysBy) a key.
+[`DiffBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.DiffBy), [`IntersectBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IntersectBy), [`DiffAssocBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffAssocBy), [`IntersectAssocBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.IntersectAssocBy) and [`FlipBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.FlipBy) take a value, and [`SortKeysBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysBy) and [`SortKeysByDesc`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysByDesc) a key.
 
 | A function that | Name | Examples |
 | --- | --- | --- |
@@ -282,15 +282,16 @@ odd.Values().All() // [11 13]
 ```
 
 A [`KeyedCollection[K, V]`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection) wraps an [`iter.Seq2[K, V]`](https://pkg.go.dev/iter#Seq2).
-It has every method of [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) but [`Keyed`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed), [`Pad`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Pad), [`Zip2`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip2) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin), and each keeps the keys.
+It has every method of [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) but [`All`](https://pkg.go.dev/github.com/mpyw/collect#Collection.All), [`Keyed`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed), [`Pad`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Pad), [`Zip2`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip2) to [`Zip5`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip5) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin), and each keeps the keys.
 Its functions take the key first, as [`maps.All`](https://pkg.go.dev/maps#All) yields it.
-A method that returns a value returns the pair instead: [`First()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First) is `(K, V, bool)`.
+A method that returns a value returns the pair instead: [`First()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.First) is `(K, V, bool)`.
 It also has the methods of keys: [`Get`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Get), [`Has`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Has), [`Only`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Only), [`Except`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Except), [`FlipBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.FlipBy), [`Union`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Union), [`Replace`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Replace), [`DiffKeys`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffKeys), [`SortKeysBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysBy) and more.
 [`Entries()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Entries) returns its pairs in order, as a [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) of [`Entry`](https://pkg.go.dev/github.com/mpyw/collect#Entry) values, with every repeated key.
+[`collect.FromEntries`](https://pkg.go.dev/github.com/mpyw/collect#FromEntries) turns them back into a [`KeyedCollection`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection), and [`collect.E(k, v)`](https://pkg.go.dev/github.com/mpyw/collect#E) makes an [`Entry`](https://pkg.go.dev/github.com/mpyw/collect#Entry) with its types inferred.
 
 > [!NOTE]
 > A key may come more than once, as in an [`iter.Seq2`](https://pkg.go.dev/iter#Seq2).
-> [`Count()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Count) and [`Keys()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Keys) see each one, and [`Get`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Get) returns the first value of a key.
+> [`Count()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Count) and [`Keys()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Keys) see each one, and [`Get`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Get) returns the first value of a key.
 > [`ToMap()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.ToMap) returns a `map[K]V`, so it has no order, and the last value of a key wins.
 > [`Entries().All()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Entries) keeps the order and every pair.
 
@@ -312,6 +313,7 @@ quads.MustFirst().MustFirst().All() // [1 2]
 > [!NOTE]
 > In the documentation, [`Chunk`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Chunk) reads [`Chunk[C interface{ Collection[T] }](size int) Collection[C]`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Chunk).
 > `C` is always [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection), and Go infers it. Write [`c.Chunk(2)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Chunk).
+> A compiler error may still name `C`, [`E`](https://pkg.go.dev/github.com/mpyw/collect#E) or `Z`: they are these pinned parameters.
 >
 > A method of [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) cannot return [`Collection[Collection[T]]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) in Go.
 > The compiler reports an "instantiation cycle" ([golang/go#80172](https://github.com/golang/go/issues/80172)).
@@ -437,7 +439,7 @@ c.FlatMap(collect.FromSlice)
 <tr>
 <td>
 
-A method of your own generic type that returns it over [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) is an instantiation cycle too
+A method of your own generic type that returns it over [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection), or over [`Entry[int, T]`](https://pkg.go.dev/github.com/mpyw/collect#Entry), is an instantiation cycle too
 
 </td>
 <td>
@@ -452,6 +454,74 @@ func (b Box[T]) Rows() Box[collect.Collection[T]]
 
 ```go
 func Rows[T any](b Box[T]) Box[collect.Collection[T]]
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+`go vet` asks the fields of a literal from another package to be named, and a literal spells out every type
+
+</td>
+<td>
+
+```go
+collect.Entry[string, int]{"a", 1}
+// struct literal uses unkeyed fields
+```
+
+</td>
+<td>
+
+```go
+collect.E("a", 1)
+collect.T2(1, "a")
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+A generic method is not a value until its type parameters are known, even ones Go infers in a call
+
+</td>
+<td>
+
+```go
+f := c.Chunk
+// cannot use generic function c.Chunk
+// without instantiation
+```
+
+</td>
+<td>
+
+```go
+f := c.Chunk[collect.Collection[int]]
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+Go 1.27.1's linker panics on `reflect.TypeFor[T]().Comparable()` for a struct or array that needs a generated equality, such as [`Entry[int, string]`](https://pkg.go.dev/github.com/mpyw/collect#Entry). It is a bug of Go, not of collect
+
+</td>
+<td>
+
+```go
+reflect.TypeFor[collect.Entry[int, string]]().Comparable()
+// panic: R_USEIFACE ... references type:.eqfunc
+```
+
+</td>
+<td>
+
+```go
+reflect.TypeOf(collect.Entry[int, string]{}).Comparable()
 ```
 
 </td>
@@ -477,7 +547,7 @@ collect([10, 11, 12])
 </td>
 <td>
 
-[`Filter`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Filter), [`Keyed`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed), [`Entries`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Entries)
+[`Filter`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Filter), [`Keyed`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed), [`Entries`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Entries)
 
 ```go
 collect.Of(10, 11, 12).
@@ -828,14 +898,14 @@ c.Percentage(f, 2)
 </td>
 <td>
 
-PHP's `round` works on the decimal form, Go's [`math.Round`](https://pkg.go.dev/math#Round) on the binary one. A tie can round the other way
+Laravel computes m / n * 100, which rounds twice. A tie such as 57.5 can then come out as 57.49999999999999. [`Percentage`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Percentage) computes m * 100 / n, and rounds the exact value
 
 </td>
 </tr>
 <tr>
 <td>
 
-[`nth`](https://laravel.com/framework/docs/collections#method-nth), [`multiply`](https://laravel.com/framework/docs/collections#method-multiply), [`shuffle`](https://laravel.com/framework/docs/collections#method-shuffle), [`random`](https://laravel.com/framework/docs/collections#method-random), [`split`](https://laravel.com/framework/docs/collections#method-split), [`flatMap`](https://laravel.com/framework/docs/collections#method-flatmap)
+[`nth`](https://laravel.com/framework/docs/collections#method-nth), [`multiply`](https://laravel.com/framework/docs/collections#method-multiply), [`shuffle`](https://laravel.com/framework/docs/collections#method-shuffle), [`random`](https://laravel.com/framework/docs/collections#method-random), [`split`](https://laravel.com/framework/docs/collections#method-split), [`flatMap`](https://laravel.com/framework/docs/collections#method-flatmap), [`concat`](https://laravel.com/framework/docs/collections#method-concat), [`groupBy`](https://laravel.com/framework/docs/collections#method-groupby)
 
 ```php
 $keyed->nth(2); // keys 0, 1, 2
@@ -844,7 +914,7 @@ $keyed->nth(2); // keys 0, 1, 2
 </td>
 <td>
 
-[`Nth`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Nth), [`Multiply`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Multiply), [`Shuffle`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Shuffle), [`RandomN`](https://pkg.go.dev/github.com/mpyw/collect#Collection.RandomN), [`Split`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Split), [`FlatMap`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FlatMap)
+[`Nth`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Nth), [`Multiply`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Multiply), [`Shuffle`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Shuffle), [`RandomN`](https://pkg.go.dev/github.com/mpyw/collect#Collection.RandomN), [`Split`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Split), [`FlatMap`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FlatMap), [`Concat`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Concat), [`GroupBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.GroupBy)
 
 ```go
 keyed.Nth(2, 0) // keys 0, 2, 4
@@ -853,7 +923,7 @@ keyed.Nth(2, 0) // keys 0, 2, 4
 </td>
 <td>
 
-A [`KeyedCollection`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection) keeps every key, where Laravel numbers them again
+A [`KeyedCollection`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection) keeps every key, where Laravel numbers them again. Laravel's [`split`](https://laravel.com/framework/docs/collections#method-split) numbers only int keys, and [`groupBy`](https://laravel.com/framework/docs/collections#method-groupby) keeps them with `preserveKeys`
 
 </td>
 </tr>
@@ -879,6 +949,83 @@ c.DiffFunc(other, strings.EqualFold)
 <td>
 
 The function tells whether two values are equal, not how they compare
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`random`](https://laravel.com/framework/docs/collections#method-random)
+
+```php
+collect([])->random(); // throws
+```
+
+</td>
+<td>
+
+[`Random`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Random)
+
+```go
+_, ok := collect.Of[int]().Random() // false
+```
+
+</td>
+<td>
+
+A lookup that may find nothing returns a bool. See [Results](#results-bool-error-and-must)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`crossJoin`](https://laravel.com/framework/docs/collections#method-crossjoin)
+
+```php
+$a->crossJoin($b, $c);
+```
+
+</td>
+<td>
+
+[`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin)
+
+```go
+a.CrossJoin(b) // two at a time
+```
+
+</td>
+<td>
+
+Go has no variadic type parameters, and three or more at once are rare
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`range`](https://laravel.com/framework/docs/collections#method-range)
+
+```php
+LazyCollection::range(0, 1, 0.1)->last();
+// 0.9999999999999999
+```
+
+</td>
+<td>
+
+[`RangeStep`](https://pkg.go.dev/github.com/mpyw/collect#RangeStep)
+
+```go
+collect.RangeStep(0, 1, 0.1).MustLast()
+// 1
+```
+
+</td>
+<td>
+
+A float range computes from + i * step, as PHP's own range and Laravel's eager `Collection::range` do. Laravel's lazy range adds the step, and rounding builds up
 
 </td>
 </tr>
@@ -913,28 +1060,6 @@ c.Contains(func(v int) bool { return v > 1 })
 <tr>
 <td>
 
-[`containsOneItem`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsOneItem), [`containsManyItems`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsManyItems)
-
-```php
-$c->containsOneItem();
-$c->containsManyItems();
-```
-
-</td>
-<td>
-
-[`HasSole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasSole), [`HasMany`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasMany)
-
-```go
-c.HasSole()
-c.HasMany()
-```
-
-</td>
-</tr>
-<tr>
-<td>
-
 [`merge`](https://laravel.com/framework/docs/collections#method-merge)
 
 ```php
@@ -949,8 +1074,10 @@ $keyed->merge($other);
 
 ```go
 list.Concat(other)
-keyed.Replace(other)
+keyed.Replace(other) // with string keys
 ```
+
+Laravel appends int keys, and numbers them again
 
 </td>
 </tr>
@@ -1111,26 +1238,6 @@ collect.FromSlice(values)
 <td>
 
 [`IntersectKeys`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.IntersectKeys), named as [`DiffKeys`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffKeys) is
-
-</td>
-</tr>
-<tr>
-<td>
-
-[`zip`](https://laravel.com/framework/docs/collections#method-zip)
-
-```php
-$a->zip($b);
-```
-
-</td>
-<td>
-
-[`Zip2`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip2), and [`Zip3`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip3) to [`Zip5`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip5) for more
-
-```go
-a.Zip2(b)
-```
 
 </td>
 </tr>

@@ -26,3 +26,11 @@ func TestOnly(t *testing.T) {
 func TestOnlyStopsEarly(t *testing.T) {
 	assertStopsEarly2(t, endless().Keyed().Only(1, 2, 3, 4).Seq())
 }
+
+// The keys are copied when Only is called, as Except copies them.
+func TestOnlyCopiesKeys(t *testing.T) {
+	keys := []string{"a"}
+	c := keyedOf([]string{"a", "b"}, []int{1, 2}).Only(keys...)
+	keys[0] = "b"
+	assertEqual(t, c.Keys().All(), []string{"a"})
+}

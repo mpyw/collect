@@ -2,7 +2,7 @@ package collect
 
 // MustFirst returns the first value. It panics with [ErrItemNotFound] if
 // there is none, as Laravel's firstOrFail throws. It reads at most one.
-// [Collection.Key] reports the absence instead.
+// [Collection.First] reports the absence instead.
 func (c Collection[T]) MustFirst() T {
 	v, ok := c.First()
 	if !ok {

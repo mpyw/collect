@@ -15,6 +15,7 @@ func (c Collection[T]) IsEmpty() bool {
 
 // IsEmpty reports whether the collection has no pairs. It reads at most
 // one, as [Collection.IsEmpty] does, and drops it.
+// A source that can be read once loses what it reads: call Remember first.
 func (c KeyedCollection[K, V]) IsEmpty() bool {
 	for range c.Seq() {
 		return false

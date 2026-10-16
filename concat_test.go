@@ -32,3 +32,15 @@ func ExampleKeyedCollection_Concat() {
 func TestKeyedConcatStopsEarly(t *testing.T) {
 	assertStopsEarly2(t, collect.Of(1).Keyed().Concat(endless().Keyed()).Seq())
 }
+
+// The others are copied when Concat is called.
+func TestConcatCopiesOthers(t *testing.T) {
+	others := []collect.Collection[int]{collect.Of(2)}
+	c := collect.Of(1).Concat(others...)
+	others[0] = collect.Of(3)
+	assertEqual(t, c.All(), []int{1, 2})
+	keyedOthers := []collect.KeyedCollection[int, int]{collect.Of(2).Keyed()}
+	k := collect.Of(1).Keyed().Concat(keyedOthers...)
+	keyedOthers[0] = collect.Of(3).Keyed()
+	assertEqual(t, k.Values().All(), []int{1, 2})
+}

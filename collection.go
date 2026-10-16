@@ -71,6 +71,19 @@ func FromSeq2[K comparable, V any](seq iter.Seq2[K, V]) KeyedCollection[K, V] {
 	return KeyedCollection[K, V]{seq: seq}
 }
 
+// FromEntries returns a keyed collection of the entries of c, each Key with
+// its Value. It undoes [KeyedCollection.Entries]: FromEntries(k.Entries())
+// reads the same pairs as k.
+func FromEntries[K comparable, V any](c Collection[Entry[K, V]]) KeyedCollection[K, V] {
+	return KeyedCollection[K, V]{seq: func(yield func(K, V) bool) {
+		for e := range c.Seq() {
+			if !yield(e.Key, e.Value) {
+				return
+			}
+		}
+	}}
+}
+
 // FromMap returns a keyed collection that reads m, with no copy. As with
 // range over a map, the order of the pairs is not specified, and differs
 // from one read to the next.
@@ -112,6 +125,33 @@ type Number interface {
 type Entry[K, V any] struct {
 	Key   K
 	Value V
+}
+
+// E returns an [Entry] of k and v. Go infers their types, which a literal
+// such as Entry[int, string]{1, "a"} spells out, and go vet asks the fields
+// of a literal from another package to be named.
+func E[K, V any](k K, v V) Entry[K, V] {
+	return Entry[K, V]{k, v}
+}
+
+// T2 returns a [Tuple2] of a and b, with their types inferred, as [E] does.
+func T2[A, B any](a A, b B) Tuple2[A, B] {
+	return Tuple2[A, B]{a, b}
+}
+
+// T3 returns a [Tuple3] of a, b and c, with their types inferred.
+func T3[A, B, C any](a A, b B, c C) Tuple3[A, B, C] {
+	return Tuple3[A, B, C]{a, b, c}
+}
+
+// T4 returns a [Tuple4] of a, b, c and d, with their types inferred.
+func T4[A, B, C, D any](a A, b B, c C, d D) Tuple4[A, B, C, D] {
+	return Tuple4[A, B, C, D]{a, b, c, d}
+}
+
+// T5 returns a [Tuple5] of a, b, c, d and e, with their types inferred.
+func T5[A, B, C, D, E any](a A, b B, c C, d D, e E) Tuple5[A, B, C, D, E] {
+	return Tuple5[A, B, C, D, E]{a, b, c, d, e}
 }
 
 // Tuple2 holds a value of each of two collections. [Collection.Zip2] and
@@ -165,8 +205,9 @@ var (
 	// asked for more values than there are.
 	ErrNotEnoughItems = errors.New("collect: not enough items")
 
-	// ErrInvalidArgument is the panic of a method given an int argument
-	// that cannot be right, such as Chunk(0), as slices.Chunk panics.
+	// ErrInvalidArgument is wrapped by the panic of a method given an
+	// argument that cannot be right, such as Chunk(0) or RangeStep's step 0,
+	// as slices.Chunk panics.
 	ErrInvalidArgument = errors.New("collect: invalid argument")
 
 	// ErrUnsupportedKey is the error of [KeyedCollection.MarshalJSONTo] for

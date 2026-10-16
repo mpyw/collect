@@ -199,3 +199,42 @@ func TestSingleUseSource(t *testing.T) {
 	assertEqual(t, eager.All(), []int{1, 2})
 	assertEqual(t, eager.All(), []int{1, 2})
 }
+
+func ExampleFromEntries() {
+	entries := collect.Of(collect.E("a", 1), collect.E("b", 2))
+
+	fmt.Println(collect.FromEntries(entries).ToMap())
+	// Output: map[a:1 b:2]
+}
+
+func TestFromEntriesUndoesEntries(t *testing.T) {
+	k := keyedOf([]string{"b", "a", "b"}, []int{1, 2, 3})
+	assertPairs(t, collect.FromEntries(k.Entries()), []string{"b", "a", "b"}, []int{1, 2, 3})
+	assertStopsEarly2(t, collect.FromEntries(endless().Keyed().Entries()).Seq())
+}
+
+func ExampleE() {
+	fmt.Println(collect.E("a", 1))
+	// Output: {a 1}
+}
+
+func ExampleT2() {
+	fmt.Println(collect.Of(collect.T2(1, "a"), collect.T2(2, "b")).All())
+	// Output: [{1 a} {2 b}]
+}
+
+func ExampleT3() {
+	fmt.Println(collect.T3(1, "a", true))
+	// Output: {1 a true}
+}
+
+func ExampleT4() {
+	fmt.Println(collect.T4(1, "a", true, 1.5))
+	// Output: {1 a true 1.5}
+}
+
+func ExampleT5() {
+	t := collect.T5(1, "a", true, 1.5, 'x')
+	fmt.Println(t.A, t.B, t.C, t.D, string(t.E))
+	// Output: 1 a true 1.5 x
+}

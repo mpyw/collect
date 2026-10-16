@@ -22,3 +22,12 @@ func ExampleCollection_CrossJoin() {
 func TestCrossJoinStopsEarly(t *testing.T) {
 	assertStopsEarly(t, endless().CrossJoin(collect.Of(1, 2)).Seq())
 }
+
+// An empty other gives no values, and reads none of an endless collection.
+func TestCrossJoinEmptyOther(t *testing.T) {
+	seq, n := counted()
+	assertEqual(t, collect.FromSeq(seq).CrossJoin(collect.Of[string]()).All(), nil)
+	if *n != 0 {
+		t.Errorf("read %d values, want 0", *n)
+	}
+}

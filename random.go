@@ -3,7 +3,7 @@ package collect
 import "math/rand/v2"
 
 // Random returns a value chosen at random. It is false for an empty
-// collection. It reads every value, and keeps only one.
+// collection, where Laravel's random throws. It reads every value, and keeps only one.
 func (c Collection[T]) Random() (T, bool) {
 	var (
 		chosen T
