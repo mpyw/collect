@@ -507,7 +507,7 @@ f := c.Chunk[collect.Collection[int]]
 <tr>
 <td>
 
-Go 1.27.1's linker panics on `reflect.TypeFor[T]().Comparable()` for a struct or array that needs a generated equality, such as [`Entry[int, string]`](https://pkg.go.dev/github.com/mpyw/collect#Entry). It is a bug of Go, not of collect
+Go 1.26 and 1.27's linker panics on `reflect.TypeFor[T]().Comparable()` for a struct or array that needs a generated equality, such as [`Entry[int, string]`](https://pkg.go.dev/github.com/mpyw/collect#Entry). It is a bug of Go, [golang/go#81990](https://github.com/golang/go/issues/81990), fixed for Go 1.27.3
 
 </td>
 <td>

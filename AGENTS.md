@@ -73,7 +73,7 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 - A `Test` covers what an example would not show: empty sources, negative and zero counts, panics, errors, laziness and early breaks.
 - Keep statement coverage at 100%.
 - Check every error, or drop it with `_ =` and a comment saying why. errcheck runs with none of its default exclusions. Only `fmt.Println` in `_test.go` files is excluded, for the examples.
-- Release with the `Tag and Release` workflow: `gh workflow run tag_and_release.yml -f version=vX.Y.Z`. It tags main's head only once its tests passed, and never reuses a tag: Go caches a version forever.
+- Release from GitHub's "Draft a new release", which creates the tag. Tag main's head only once its tests passed, as `vX.Y.Z`, and never reuse a tag: Go caches a version forever. The notes can be generated. There is nothing to build, so there is no release workflow.
 
 ## Skills
 
