@@ -116,23 +116,104 @@ Go infers the type of [`Identity`](https://pkg.go.dev/github.com/mpyw/collect#Id
 
 ## Results: `bool`, `error` and `Must`
 
-| A method returns | When | Examples |
-| --- | --- | --- |
-| `(T, bool)` | There may be nothing, and that is the only way to fail | [`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First), [`Last`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Last), [`Get`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Get), [`Search`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Search), [`MaxBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MaxBy), [`AvgBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.AvgBy) |
-| `(T, error)` | It can fail in more than one way, or the reason matters | [`Sole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sole), [`Ensure`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Ensure), [`Combine`](https://pkg.go.dev/github.com/mpyw/collect#Combine), [`RandomN`](https://pkg.go.dev/github.com/mpyw/collect#Collection.RandomN) |
-| `T`, and panics | You know it cannot fail. Its name is `Must` and the name of the method above | [`MustFirst`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustFirst), [`MustLast`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustLast), [`MustGet`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.MustGet), [`MustSole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustSole), [`MustEnsure`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustEnsure), [`MustCombine`](https://pkg.go.dev/github.com/mpyw/collect#MustCombine) |
+<table>
+<tr><th>A method returns</th><th>When</th><th>Example</th></tr>
+<tr>
+<td>
+
+`(T, bool)`
+
+</td>
+<td>
+
+There may be nothing, and that is the only way to fail.
+
+[`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First), [`Last`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Last), [`Get`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Get), [`Search`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Search), [`MaxBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MaxBy), [`AvgBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.AvgBy)
+
+</td>
+<td>
+
+```go
+user, ok := users.First()
+if !ok {
+	// There is no user.
+}
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+`(T, error)`
+
+</td>
+<td>
+
+It can fail in more than one way, or the reason matters.
+
+[`Sole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sole), [`Ensure`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Ensure), [`Combine`](https://pkg.go.dev/github.com/mpyw/collect#Combine), [`RandomN`](https://pkg.go.dev/github.com/mpyw/collect#Collection.RandomN)
+
+</td>
+<td>
+
+```go
+user, err := users.Sole()
+if errors.Is(err, collect.ErrMultipleItemsFound) {
+	// There is more than one.
+}
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+`T`, and panics
+
+</td>
+<td>
+
+You know it cannot fail. Its name is `Must` and the name of the method above.
+
+[`MustFirst`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustFirst), [`MustLast`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustLast), [`MustGet`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.MustGet), [`MustSole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustSole), [`MustEnsure`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustEnsure), [`MustCombine`](https://pkg.go.dev/github.com/mpyw/collect#MustCombine)
+
+</td>
+<td>
+
+```go
+// Panics with collect.ErrItemNotFound if there is none.
+user := users.MustFirst()
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+A panic, with no `Must`
+
+</td>
+<td>
+
+An int argument that cannot be right, as [`slices.Chunk(s, 0)`](https://pkg.go.dev/slices#Chunk) panics.
+
+For example [`Chunk`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Chunk), [`Sliding`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sliding), [`Nth`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Nth), [`Split`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Split), [`SplitIn`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SplitIn), [`RangeStep`](https://pkg.go.dev/github.com/mpyw/collect#RangeStep), [`RandomN`](https://pkg.go.dev/github.com/mpyw/collect#Collection.RandomN)
+
+</td>
+<td>
+
+```go
+c.Chunk(0)                 // panics
+collect.RangeStep(0, 1, 0) // panics
+```
+
+</td>
+</tr>
+</table>
 
 Every error wraps one of the package's errors, so [`errors.Is`](https://pkg.go.dev/errors#Is) tells them apart.
 A `Must` method panics with the same error.
-
-```go
-_, err := collect.Of(1, 2, 3).Sole()
-errors.Is(err, collect.ErrMultipleItemsFound) // true
-```
-
-> [!IMPORTANT]
-> An int argument that cannot be right panics, with no `Must` in the name.
-> [`Chunk(0)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Chunk), [`Sliding(0, 1)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sliding), [`Nth(0, 0)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Nth), [`Split(0)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Split) and [`RangeStep(0, 1, 0)`](https://pkg.go.dev/github.com/mpyw/collect#RangeStep) are such calls, as [`slices.Chunk(s, 0)`](https://pkg.go.dev/slices#Chunk) is.
 
 ## Keys when you want them
 
@@ -167,7 +248,9 @@ It is a [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) li
 
 ```go
 quads := collect.Of(1, 2, 3, 4, 5, 6, 7, 8).Chunk(2).Chunk(2)
-// [[[1 2] [3 4]] [[5 6] [7 8]]]
+
+quads.Count()                       // 2
+quads.MustFirst().MustFirst().All() // [1 2]
 ```
 
 [`GroupBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.GroupBy), [`ChunkWhile`](https://pkg.go.dev/github.com/mpyw/collect#Collection.ChunkWhile), [`ChunkBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.ChunkBy), [`Sliding`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sliding), [`Split`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Split) and [`SplitIn`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SplitIn) nest the same way.
@@ -195,53 +278,815 @@ b, _ := json.Marshal(collect.Of("x", "y").Keyed())
 
 ## Differences from Laravel
 
-| Laravel | collect | Why |
-| --- | --- | --- |
-| Keys survive [`filter`](https://laravel.com/framework/docs/collections#method-filter) | Only after [`Keyed()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed) | You choose a [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) or a [`KeyedCollection`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection) |
-| `fn($value, $key)` | `func(key, value)` | The order of [`iter.Seq2`](https://pkg.go.dev/iter#Seq2) |
-| [`sum()`](https://laravel.com/framework/docs/collections#method-sum), [`sort()`](https://laravel.com/framework/docs/collections#method-sort), [`unique()`](https://laravel.com/framework/docs/collections#method-unique) | [`SumBy(collect.Identity)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SumBy) and the like | See [Key functions and `Identity`](#key-functions-and-identity) |
-| [`first()`](https://laravel.com/framework/docs/collections#method-first) returns `null` | [`First()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First) returns `(T, bool)` | Go has no `null` for every type |
-| [`firstOrFail()`](https://laravel.com/framework/docs/collections#method-first-or-fail), [`sole()`](https://laravel.com/framework/docs/collections#method-sole) throw | [`MustFirst()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustFirst), [`MustSole()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustSole) panic. [`Sole()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sole) returns an error | See [Results](#results-bool-error-and-must) |
-| [`contains($value)`](https://laravel.com/framework/docs/collections#method-contains), [`where('age', '>', 20)`](https://laravel.com/framework/docs/collections#method-where) | [`Contains(func...)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Contains), [`Filter(func...)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Filter) | The compiler checks a function |
-| [`pluck('user.name')`](https://laravel.com/framework/docs/collections#method-pluck), [`$c->map->name`](https://laravel.com/framework/docs/collections#higher-order-messages) | [`Map(func...)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Map) | No reflection, and no magic properties |
-| `*Strict` methods | The methods without `Strict` | Go always compares strictly |
-| [`join(', ', ' and ')`](https://laravel.com/framework/docs/collections#method-join) | [`JoinFinalBy(f, ", ", " and ")`](https://pkg.go.dev/github.com/mpyw/collect#Collection.JoinFinalBy) | [`JoinBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.JoinBy) is [`ImplodeBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.ImplodeBy), under the name of [`strings.Join`](https://pkg.go.dev/strings#Join) |
-| [`collect($map)`](https://laravel.com/framework/docs/collections#creating-collections) keeps the order | [`FromMap(m)`](https://pkg.go.dev/github.com/mpyw/collect#FromMap) has no order | A Go map has no order. Sort it, or use [`FromSeq2`](https://pkg.go.dev/github.com/mpyw/collect#FromSeq2) |
-| [`chunk(0)`](https://laravel.com/framework/docs/collections#method-chunk) is empty | [`Chunk(0)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Chunk) panics | The same as [`slices.Chunk`](https://pkg.go.dev/slices#Chunk) |
-| [`zip`](https://laravel.com/framework/docs/collections#method-zip) takes many arrays | [`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip) takes one collection | Go has no variadic type parameters |
+<table>
+<tr><th>Laravel</th><th>collect</th><th>Why</th></tr>
+<tr>
+<td>
+
+[`filter`](https://laravel.com/framework/docs/collections#method-filter)
+
+```php
+collect([10, 11, 12])
+    ->filter(fn ($v) => $v > 10)
+    ->all();
+// [1 => 11, 2 => 12]
+```
+
+</td>
+<td>
+
+[`Filter`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Filter), [`Keyed`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed)
+
+```go
+collect.Of(10, 11, 12).
+	Filter(func(v int) bool { return v > 10 }).
+	All()
+// [11 12]
+
+collect.Of(10, 11, 12).Keyed().
+	Filter(func(_, v int) bool { return v > 10 }).
+	All()
+// map[1:11 2:12]
+```
+
+</td>
+<td>
+
+Keys are kept only after [`Keyed()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed). You choose a [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) or a [`KeyedCollection`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`map`](https://laravel.com/framework/docs/collections#method-map)
+
+```php
+$c->map(fn ($value, $key) => "$key=$value");
+```
+
+</td>
+<td>
+
+[`KeyedCollection.Map`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Map)
+
+```go
+c.Map(func(key string, value int) string {
+	return fmt.Sprintf("%s=%d", key, value)
+})
+```
+
+</td>
+<td>
+
+The key comes first, in the order of [`iter.Seq2`](https://pkg.go.dev/iter#Seq2)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`sum`](https://laravel.com/framework/docs/collections#method-sum)
+
+```php
+$c->sum();
+$orders->sum('price');
+```
+
+</td>
+<td>
+
+[`SumBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SumBy)
+
+```go
+c.SumBy(collect.Identity)
+orders.SumBy(func(o Order) int { return o.Price })
+```
+
+</td>
+<td>
+
+See [Key functions and [`Identity`](https://pkg.go.dev/github.com/mpyw/collect#Identity)](#key-functions-and-identity)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`first`](https://laravel.com/framework/docs/collections#method-first)
+
+```php
+$user = $users->first(); // null if none
+```
+
+</td>
+<td>
+
+[`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First)
+
+```go
+user, ok := users.First()
+```
+
+</td>
+<td>
+
+Go has no `null` for every type
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`firstOrFail`](https://laravel.com/framework/docs/collections#method-first-or-fail), [`sole`](https://laravel.com/framework/docs/collections#method-sole)
+
+```php
+$users->firstOrFail(); // throws
+$users->sole();        // throws
+```
+
+</td>
+<td>
+
+[`MustFirst`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustFirst), [`MustSole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MustSole), [`Sole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sole)
+
+```go
+users.MustFirst() // panics
+users.MustSole()  // panics
+users.Sole()      // returns an error
+```
+
+</td>
+<td>
+
+See [Results](#results-bool-error-and-must)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`contains`](https://laravel.com/framework/docs/collections#method-contains), [`where`](https://laravel.com/framework/docs/collections#method-where)
+
+```php
+$c->contains(3);
+$users->where('age', '>', 20);
+```
+
+</td>
+<td>
+
+[`Contains`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Contains), [`Filter`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Filter)
+
+```go
+c.Contains(func(v int) bool { return v == 3 })
+users.Filter(func(u User) bool { return u.Age > 20 })
+```
+
+</td>
+<td>
+
+The compiler checks a function
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`pluck`](https://laravel.com/framework/docs/collections#method-pluck), [higher order messages](https://laravel.com/framework/docs/collections#higher-order-messages)
+
+```php
+$users->pluck('name');
+$users->map->name;
+```
+
+</td>
+<td>
+
+[`Map`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Map)
+
+```go
+users.Map(func(u User) string { return u.Name })
+```
+
+</td>
+<td>
+
+No reflection, and no magic properties
+
+</td>
+</tr>
+<tr>
+<td>
+
+`*Strict` methods
+
+</td>
+<td>
+
+The methods without `Strict`
+
+</td>
+<td>
+
+Go always compares strictly
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`join`](https://laravel.com/framework/docs/collections#method-join)
+
+```php
+collect(['a', 'b', 'c'])->join(', ', ' and ');
+// 'a, b and c'
+```
+
+</td>
+<td>
+
+[`JoinFinalBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.JoinFinalBy)
+
+```go
+collect.Of("a", "b", "c").
+	JoinFinalBy(collect.Identity, ", ", " and ")
+// "a, b and c"
+```
+
+</td>
+<td>
+
+[`JoinBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.JoinBy) is [`ImplodeBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.ImplodeBy), under the name of [`strings.Join`](https://pkg.go.dev/strings#Join)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`collect($map)`](https://laravel.com/framework/docs/collections#creating-collections), [`keys`](https://laravel.com/framework/docs/collections#method-keys)
+
+```php
+collect(['b' => 2, 'a' => 1])->keys();
+// ['b', 'a']
+```
+
+</td>
+<td>
+
+[`FromMap`](https://pkg.go.dev/github.com/mpyw/collect#FromMap), [`Keys`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Keys)
+
+```go
+collect.FromMap(map[string]int{"b": 2, "a": 1}).Keys()
+// either order
+```
+
+</td>
+<td>
+
+A Go map has no order. Sort it, or use [`FromSeq2`](https://pkg.go.dev/github.com/mpyw/collect#FromSeq2)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`chunk`](https://laravel.com/framework/docs/collections#method-chunk)
+
+```php
+$c->chunk(0); // empty
+```
+
+</td>
+<td>
+
+[`Chunk`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Chunk)
+
+```go
+c.Chunk(0) // panics
+```
+
+</td>
+<td>
+
+The same as [`slices.Chunk`](https://pkg.go.dev/slices#Chunk)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`zip`](https://laravel.com/framework/docs/collections#method-zip)
+
+```php
+$a->zip($b, $c);
+```
+
+</td>
+<td>
+
+[`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip)
+
+```go
+a.Zip(b) // one at a time
+```
+
+</td>
+<td>
+
+Go has no variadic type parameters
+
+</td>
+</tr>
+</table>
 
 Some Laravel methods have another name or another way here:
 
-| Laravel | collect |
-| --- | --- |
-| [`average`](https://laravel.com/framework/docs/collections#method-average), [`some`](https://laravel.com/framework/docs/collections#method-some) | [`AvgBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.AvgBy), [`Contains`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Contains) |
-| [`hasSole()`](https://laravel.com/framework/docs/collections#method-hassole), [`containsOneItem()`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsOneItem) | The error of [`Sole()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sole), which returns the value too |
-| [`hasMany()`](https://laravel.com/framework/docs/collections#method-hasmany), [`containsManyItems()`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsManyItems) | `c.Take(2).Count() == 2` |
-| [`merge`](https://laravel.com/framework/docs/collections#method-merge) | [`Concat`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Concat) for a [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection), [`Replace`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Replace) for a [`KeyedCollection`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection) |
-| [`mapToDictionary`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_mapToDictionary) | [`MapToGroups`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MapToGroups) |
-| [`reduceWithKeys`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_reduceWithKeys) | [`KeyedCollection.Reduce`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Reduce) |
-| [`sort($callback)`](https://laravel.com/framework/docs/collections#method-sort), [`sortKeysUsing`](https://laravel.com/framework/docs/collections#method-sortkeysusing), [`diffUsing`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_diffUsing), [`intersectUsing`](https://laravel.com/framework/docs/collections#method-intersectusing) | [`SortFunc`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SortFunc), [`SortKeysFunc`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysFunc), [`DiffFunc`](https://pkg.go.dev/github.com/mpyw/collect#Collection.DiffFunc), [`IntersectFunc`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IntersectFunc) |
-| [`value('name')`](https://laravel.com/framework/docs/collections#method-value), [`firstWhere('name', 'x')`](https://laravel.com/framework/docs/collections#method-first-where) | [`Map(f).First()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Map), [`FirstWhere(func...)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FirstWhere) |
-| [`isEmpty()`](https://laravel.com/framework/docs/collections#method-isempty), [`isNotEmpty()`](https://laravel.com/framework/docs/collections#method-isnotempty) | The `bool` of [`First()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First): `_, ok := c.First()` |
-| [`collapse()`](https://laravel.com/framework/docs/collections#method-collapse), [`flatten(1)`](https://laravel.com/framework/docs/collections#method-flatten) | [`FlatMap(collect.FromSlice)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FlatMap), [`FlatMap(collect.Identity)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FlatMap) |
-| [`toArray()`](https://laravel.com/framework/docs/collections#method-toarray), [`getIterator()`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_getIterator), [`toJson()`](https://laravel.com/framework/docs/collections#method-tojson), [`toPrettyJson()`](https://laravel.com/framework/docs/collections#method-to-pretty-json) | [`All()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.All), [`Seq()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Seq), [`json.Marshal(c)`](https://pkg.go.dev/encoding/json/v2#Marshal), [`json.Marshal(c, jsontext.WithIndent("  "))`](https://pkg.go.dev/encoding/json/v2#Marshal) |
-| [`make`](https://laravel.com/framework/docs/collections#method-make), [`wrap`](https://laravel.com/framework/docs/collections#method-wrap), [`empty`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_empty), [`fromJson`](https://laravel.com/framework/docs/collections#method-fromjson) | [`Of`](https://pkg.go.dev/github.com/mpyw/collect#Of), [`FromSlice`](https://pkg.go.dev/github.com/mpyw/collect#FromSlice), the zero value, [`json.Unmarshal`](https://pkg.go.dev/encoding/json/v2#Unmarshal) then [`FromSlice`](https://pkg.go.dev/github.com/mpyw/collect#FromSlice) |
+<table>
+<tr><th>Laravel</th><th>collect</th></tr>
+<tr>
+<td>
+
+[`average`](https://laravel.com/framework/docs/collections#method-average), [`some`](https://laravel.com/framework/docs/collections#method-some)
+
+```php
+$c->average();
+$c->some(fn ($v) => $v > 1);
+```
+
+</td>
+<td>
+
+[`AvgBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.AvgBy), [`Contains`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Contains)
+
+```go
+c.AvgBy(collect.Identity)
+c.Contains(func(v int) bool { return v > 1 })
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`hasSole`](https://laravel.com/framework/docs/collections#method-hassole), [`containsOneItem`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsOneItem)
+
+```php
+$c->hasSole();
+$c->containsOneItem();
+```
+
+</td>
+<td>
+
+[`Sole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sole)
+
+```go
+_, err := c.Sole() // returns the value too
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`hasMany`](https://laravel.com/framework/docs/collections#method-hasmany), [`containsManyItems`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsManyItems)
+
+```php
+$c->hasMany();
+$c->containsManyItems();
+```
+
+</td>
+<td>
+
+[`Take`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Take), [`Count`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Count)
+
+```go
+c.Take(2).Count() == 2
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`merge`](https://laravel.com/framework/docs/collections#method-merge)
+
+```php
+$list->merge($other);
+$keyed->merge($other);
+```
+
+</td>
+<td>
+
+[`Concat`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Concat), [`KeyedCollection.Replace`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Replace)
+
+```go
+list.Concat(other)
+keyed.Replace(other)
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`mapToDictionary`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_mapToDictionary)
+
+</td>
+<td>
+
+[`MapToGroups`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MapToGroups)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`reduceWithKeys`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_reduceWithKeys)
+
+```php
+$c->reduceWithKeys(
+    fn ($carry, $value, $key) => $carry + $value,
+    0,
+);
+```
+
+</td>
+<td>
+
+[`KeyedCollection.Reduce`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Reduce)
+
+```go
+keyed.Reduce(func(carry int, key string, value int) int {
+	return carry + value
+}, 0)
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`sort($callback)`](https://laravel.com/framework/docs/collections#method-sort), [`sortKeysUsing`](https://laravel.com/framework/docs/collections#method-sortkeysusing), [`diffUsing`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_diffUsing), [`intersectUsing`](https://laravel.com/framework/docs/collections#method-intersectusing)
+
+</td>
+<td>
+
+[`SortFunc`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SortFunc), [`SortKeysFunc`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysFunc), [`DiffFunc`](https://pkg.go.dev/github.com/mpyw/collect#Collection.DiffFunc), [`IntersectFunc`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IntersectFunc)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`value`](https://laravel.com/framework/docs/collections#method-value), [`firstWhere`](https://laravel.com/framework/docs/collections#method-first-where)
+
+```php
+$users->value('name');
+$users->firstWhere('name', 'x');
+```
+
+</td>
+<td>
+
+[`Map`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Map), [`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First), [`FirstWhere`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FirstWhere)
+
+```go
+users.Map(func(u User) string { return u.Name }).First()
+users.FirstWhere(func(u User) bool { return u.Name == "x" })
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`isEmpty`](https://laravel.com/framework/docs/collections#method-isempty), [`isNotEmpty`](https://laravel.com/framework/docs/collections#method-isnotempty)
+
+```php
+$c->isEmpty();
+$c->isNotEmpty();
+```
+
+</td>
+<td>
+
+[`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First)
+
+```go
+_, ok := c.First()
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`collapse`](https://laravel.com/framework/docs/collections#method-collapse), [`flatten`](https://laravel.com/framework/docs/collections#method-flatten)
+
+```php
+collect([[1, 2], [3]])->collapse();
+$chunks->flatten(1);
+```
+
+</td>
+<td>
+
+[`FlatMap`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FlatMap), [`FromSlice`](https://pkg.go.dev/github.com/mpyw/collect#FromSlice), [`Identity`](https://pkg.go.dev/github.com/mpyw/collect#Identity)
+
+```go
+collect.Of([]int{1, 2}, []int{3}).FlatMap(collect.FromSlice)
+chunks.FlatMap(collect.Identity)
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`toArray`](https://laravel.com/framework/docs/collections#method-toarray), [`getIterator`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_getIterator), [`toJson`](https://laravel.com/framework/docs/collections#method-tojson), [`toPrettyJson`](https://laravel.com/framework/docs/collections#method-to-pretty-json)
+
+```php
+$c->toArray();
+$c->getIterator();
+$c->toJson();
+$c->toPrettyJson();
+```
+
+</td>
+<td>
+
+[`All`](https://pkg.go.dev/github.com/mpyw/collect#Collection.All), [`Seq`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Seq), [`MarshalJSONTo`](https://pkg.go.dev/github.com/mpyw/collect#Collection.MarshalJSONTo)
+
+```go
+c.All()
+c.Seq()
+json.Marshal(c) // encoding/json/v2
+json.Marshal(c, jsontext.WithIndent("  "))
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`make`](https://laravel.com/framework/docs/collections#method-make), [`wrap`](https://laravel.com/framework/docs/collections#method-wrap), [`empty`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_empty), [`fromJson`](https://laravel.com/framework/docs/collections#method-fromjson)
+
+```php
+collect([1, 2]);
+Collection::wrap($array);
+Collection::empty();
+Collection::fromJson('[1, 2]');
+```
+
+</td>
+<td>
+
+[`Of`](https://pkg.go.dev/github.com/mpyw/collect#Of), [`FromSlice`](https://pkg.go.dev/github.com/mpyw/collect#FromSlice)
+
+```go
+collect.Of(1, 2)
+collect.FromSlice(slice)
+var c collect.Collection[int] // the zero value is empty
+
+var values []int
+json.Unmarshal([]byte("[1, 2]"), &values)
+collect.FromSlice(values)
+```
+
+</td>
+</tr>
+</table>
 
 These have no Go equivalent, and are not here:
 
-| Laravel | Why |
-| --- | --- |
-| [`dd`](https://laravel.com/framework/docs/collections#method-dd), [`dump`](https://laravel.com/framework/docs/collections#method-dump) | Use [`fmt`](https://pkg.go.dev/fmt) |
-| [`macro`](https://laravel.com/framework/docs/collections#method-macro), [`proxy`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_proxy), [`mapInto`](https://laravel.com/framework/docs/collections#method-mapinto), [`pipeInto`](https://laravel.com/framework/docs/collections#method-pipeinto) | PHP's classes and magic methods |
-| [`eachSpread`](https://laravel.com/framework/docs/collections#method-eachspread), [`mapSpread`](https://laravel.com/framework/docs/collections#method-mapspread), [`reduceSpread`](https://laravel.com/framework/docs/collections#method-reduce-spread) | Go has no argument spread |
-| [`flatten()`](https://laravel.com/framework/docs/collections#method-flatten) of any depth, [`dot`](https://laravel.com/framework/docs/collections#method-dot), [`undot`](https://laravel.com/framework/docs/collections#method-undot), [`mergeRecursive`](https://laravel.com/framework/docs/collections#method-mergerecursive), [`replaceRecursive`](https://laravel.com/framework/docs/collections#method-replacerecursive) | A Go type has a fixed depth |
-| [`whereNull`](https://laravel.com/framework/docs/collections#method-wherenull), [`whereNotNull`](https://laravel.com/framework/docs/collections#method-wherenotnull), [`filter()`](https://laravel.com/framework/docs/collections#method-filter) with no callback | Go has no `null` or falsy value for every type. Pass a function to [`Filter`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Filter) |
-| [`diffAssocUsing`](https://laravel.com/framework/docs/collections#method-diffassocusing), [`diffKeysUsing`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_diffKeysUsing), [`intersectAssocUsing`](https://laravel.com/framework/docs/collections#method-intersectassocusing) | Go keys are comparable |
-| [`select`](https://laravel.com/framework/docs/collections#method-select), [`escapeWhenCastingToString`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_escapeWhenCastingToString), [`getCachingIterator`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_getCachingIterator) | PHP's arrays and strings |
-| [`withHeartbeat`](https://laravel.com/framework/docs/collections#method-with-heartbeat), [`throttle`](https://laravel.com/framework/docs/collections#method-throttle), [`takeUntilTimeout`](https://laravel.com/framework/docs/collections#method-takeUntilTimeout) | They look at the clock only when a value comes, so a slow source stops nothing. A Go program times work with [`context`](https://pkg.go.dev/context), [`time.Ticker`](https://pkg.go.dev/time#Ticker) or [`golang.org/x/time/rate`](https://pkg.go.dev/golang.org/x/time/rate) |
-| [`whenEmpty`](https://laravel.com/framework/docs/collections#method-whenempty), [`whenNotEmpty`](https://laravel.com/framework/docs/collections#method-whennotempty), [`unlessEmpty`](https://laravel.com/framework/docs/collections#method-unlessempty), [`unlessNotEmpty`](https://laravel.com/framework/docs/collections#method-unlessnotempty) | They read the first value twice, which breaks a source that can be read once. Use [`First()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First), which returns the value it reads |
-| [`tap`](https://laravel.com/framework/docs/collections#method-tap) | To see the whole collection, it must read the source, which may then be empty for the rest of the chain. [`TapEach`](https://pkg.go.dev/github.com/mpyw/collect#Collection.TapEach) sees each value lazily. Use [`Pipe`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Pipe) to call a function in a chain |
-| [`reduceInto`](https://laravel.com/framework/docs/collections#method-reduce-into) | PHP copies an array that a callback returns, so Laravel passes the result by reference. A Go map or slice shares its contents, so [`Reduce`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Reduce) does the same |
+<table>
+<tr><th>Laravel</th><th>Why</th><th>In Go</th></tr>
+<tr>
+<td>
+
+[`dd`](https://laravel.com/framework/docs/collections#method-dd), [`dump`](https://laravel.com/framework/docs/collections#method-dump)
+
+</td>
+<td>
+
+PHP debugging helpers
+
+</td>
+<td>
+
+[`fmt`](https://pkg.go.dev/fmt)
+
+```go
+fmt.Println(c.All())
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`macro`](https://laravel.com/framework/docs/collections#method-macro), [`proxy`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_proxy), [`mapInto`](https://laravel.com/framework/docs/collections#method-mapinto), [`pipeInto`](https://laravel.com/framework/docs/collections#method-pipeinto)
+
+</td>
+<td>
+
+PHP's classes and magic methods
+
+</td>
+<td>
+
+[`Pipe`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Pipe), [`Map`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Map)
+
+```go
+c.Pipe(f)
+c.Map(NewThing)
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`eachSpread`](https://laravel.com/framework/docs/collections#method-eachspread), [`mapSpread`](https://laravel.com/framework/docs/collections#method-mapspread), [`reduceSpread`](https://laravel.com/framework/docs/collections#method-reduce-spread)
+
+</td>
+<td>
+
+Go has no argument spread
+
+</td>
+<td>
+
+Take a struct or a [`Pair`](https://pkg.go.dev/github.com/mpyw/collect#Pair)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`flatten()`](https://laravel.com/framework/docs/collections#method-flatten) of any depth, [`dot`](https://laravel.com/framework/docs/collections#method-dot), [`undot`](https://laravel.com/framework/docs/collections#method-undot), [`mergeRecursive`](https://laravel.com/framework/docs/collections#method-mergerecursive), [`replaceRecursive`](https://laravel.com/framework/docs/collections#method-replacerecursive)
+
+</td>
+<td>
+
+A Go type has a fixed depth
+
+</td>
+<td>
+
+[`FlatMap`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FlatMap) one level at a time
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`whereNull`](https://laravel.com/framework/docs/collections#method-wherenull), [`whereNotNull`](https://laravel.com/framework/docs/collections#method-wherenotnull), [`filter()`](https://laravel.com/framework/docs/collections#method-filter) with no callback
+
+</td>
+<td>
+
+Go has no `null` or falsy value for every type
+
+</td>
+<td>
+
+[`Filter`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Filter)
+
+```go
+users.Filter(func(u *User) bool { return u != nil })
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`diffAssocUsing`](https://laravel.com/framework/docs/collections#method-diffassocusing), [`diffKeysUsing`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_diffKeysUsing), [`intersectAssocUsing`](https://laravel.com/framework/docs/collections#method-intersectassocusing)
+
+</td>
+<td>
+
+Go keys are comparable
+
+</td>
+<td>
+
+[`DiffAssocBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffAssocBy), [`DiffKeys`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffKeys), [`IntersectAssocBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.IntersectAssocBy)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`select`](https://laravel.com/framework/docs/collections#method-select), [`escapeWhenCastingToString`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_escapeWhenCastingToString), [`getCachingIterator`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_getCachingIterator)
+
+</td>
+<td>
+
+PHP's arrays and strings
+
+</td>
+<td>
+
+[`Map`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Map)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`withHeartbeat`](https://laravel.com/framework/docs/collections#method-with-heartbeat), [`throttle`](https://laravel.com/framework/docs/collections#method-throttle), [`takeUntilTimeout`](https://laravel.com/framework/docs/collections#method-takeUntilTimeout)
+
+</td>
+<td>
+
+They look at the clock only when a value comes, so a slow source stops nothing
+
+</td>
+<td>
+
+[`TakeWhile`](https://pkg.go.dev/github.com/mpyw/collect#Collection.TakeWhile), [`context`](https://pkg.go.dev/context)
+
+```go
+c.TakeWhile(func(int) bool { return ctx.Err() == nil })
+```
+
+Or [`time.Ticker`](https://pkg.go.dev/time#Ticker), [`golang.org/x/time/rate`](https://pkg.go.dev/golang.org/x/time/rate)
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`whenEmpty`](https://laravel.com/framework/docs/collections#method-whenempty), [`whenNotEmpty`](https://laravel.com/framework/docs/collections#method-whennotempty), [`unlessEmpty`](https://laravel.com/framework/docs/collections#method-unlessempty), [`unlessNotEmpty`](https://laravel.com/framework/docs/collections#method-unlessnotempty)
+
+</td>
+<td>
+
+They read the first value twice, which breaks a source that can be read once
+
+</td>
+<td>
+
+[`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First)
+
+```go
+first, ok := c.First()
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`tap`](https://laravel.com/framework/docs/collections#method-tap)
+
+</td>
+<td>
+
+To see the whole collection, it must read the source, which may then be empty for the rest of the chain
+
+</td>
+<td>
+
+[`TapEach`](https://pkg.go.dev/github.com/mpyw/collect#Collection.TapEach)
+
+```go
+c.TapEach(func(v int) { fmt.Println(v) })
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`reduceInto`](https://laravel.com/framework/docs/collections#method-reduce-into)
+
+</td>
+<td>
+
+PHP copies an array that a callback returns. A Go map or slice shares its contents
+
+</td>
+<td>
+
+[`Reduce`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Reduce)
+
+```go
+c.Reduce(func(m map[int]int, v int) map[int]int {
+	m[v]++
+	return m
+}, map[int]int{})
+```
+
+</td>
+</tr>
+</table>
 
 ## License
 
