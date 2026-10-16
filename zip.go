@@ -2,10 +2,11 @@ package collect
 
 import "iter"
 
-// Zip returns a pair of a value and the value of other at the same place.
-// It goes on to the end of the longer one, as Laravel does: the missing
-// side of a pair is the zero value. P is always Entry[T, U], and Go infers
-// it, as with [Collection.Chunk].
+// Zip returns each value with the value of other at the same place, as an
+// [Entry]: Key is the value, and Value is other's. It goes on to the end of
+// the longer one, as Laravel does: the missing side is the zero value. E is
+// always Entry[T, U], and Go infers it, as with [Collection.Chunk].
+// [Collection.Zip3], [Collection.Zip4] and [Collection.Zip5] zip more.
 func (c Collection[T]) Zip[U any, E interface{ Entry[T, U] }](other Collection[U]) Collection[E] {
 	return Collection[E]{seq: func(yield func(E) bool) {
 		nextT, stopT := iter.Pull(c.Seq())

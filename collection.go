@@ -116,6 +116,33 @@ type Entry[K, V any] struct {
 	Value V
 }
 
+// Tuple3 holds a value of each of three collections. [Collection.Zip3]
+// returns them.
+type Tuple3[A, B, C any] struct {
+	A A
+	B B
+	C C
+}
+
+// Tuple4 holds a value of each of four collections. [Collection.Zip4]
+// returns them.
+type Tuple4[A, B, C, D any] struct {
+	A A
+	B B
+	C C
+	D D
+}
+
+// Tuple5 holds a value of each of five collections. [Collection.Zip5]
+// returns them.
+type Tuple5[A, B, C, D, E any] struct {
+	A A
+	B B
+	C C
+	D D
+	E E
+}
+
 var (
 	// ErrItemNotFound is the error of [Collection.Sole] when there is no
 	// value, and the panic of [Collection.MustFirst], [Collection.MustLast],

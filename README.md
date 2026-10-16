@@ -768,16 +768,17 @@ $a->zip($b, $c);
 </td>
 <td>
 
-[`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip)
+[`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip), [`Zip3`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip3), [`Zip4`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip4), [`Zip5`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip5)
 
 ```go
-a.Zip(b) // one at a time
+a.Zip(b)     // Entry{Key, Value}
+a.Zip3(b, c) // Tuple3{A, B, C}
 ```
 
 </td>
 <td>
 
-Go has no variadic type parameters
+Go has no variadic type parameters, so there is a method for each count, up to five
 
 </td>
 </tr>
