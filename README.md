@@ -143,9 +143,17 @@ Pass [`collect.Value`](https://pkg.go.dev/github.com/mpyw/collect#Value) or [`co
 ```go
 prices := collect.FromMap(map[string]int{"desk": 200, "chair": 100})
 
-prices.SumBy(collect.Value)              // 300
-prices.SortBy(collect.Key).Keys().All()  // [chair desk]
+prices.SumBy(collect.Value)                // 300
+prices.SortBy(collect.Key).Keys().All()    // [chair desk]
+prices.SortBy(collect.Key).Entries().All() // [{chair 100} {desk 200}]
+prices.SortBy(collect.Key).ToMap()         // map[chair:100 desk:200], in no order
 ```
+
+> [!WARNING]
+> [`ToMap()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.ToMap) returns a Go map, so it drops the order that [`SortBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.SortBy) made.
+> A range over the map visits the keys in any order.
+> [`fmt`](https://pkg.go.dev/fmt) prints a map sorted by key, which hides this.
+> Use [`Entries().All()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Entries) or [`Keys().All()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Keys) to keep the order.
 
 A function that a method also applies to another collection takes only what it compares, so [`Identity`](https://pkg.go.dev/github.com/mpyw/collect#Identity) fits it.
 [`DiffBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.DiffBy), [`IntersectBy`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IntersectBy), [`DiffAssocBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffAssocBy), [`IntersectAssocBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.IntersectAssocBy) and [`FlipBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.FlipBy) take a value, and [`SortKeysBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysBy) a key.
