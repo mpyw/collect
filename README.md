@@ -78,6 +78,17 @@ kept.All() // [1 2 3]
 kept.All() // [1 2 3], from what Remember kept
 ```
 
+Go cannot tell these apart by type, as PHP tells a generator function from a [`Generator`](https://www.php.net/manual/en/class.generator.php) object.
+It depends on where the [`iter.Seq`](https://pkg.go.dev/iter#Seq) keeps its state:
+
+| An [`iter.Seq`](https://pkg.go.dev/iter#Seq) that | Each call | Like PHP's |
+| --- | --- | --- |
+| Starts inside the function, as [`slices.Values`](https://pkg.go.dev/slices#Values) reads its slice from the start | Reads again from the start | [Generator function](https://www.php.net/manual/en/language.generators.php) |
+| Reads from something opened outside it, such as [`*sql.Rows`](https://pkg.go.dev/database/sql#Rows) | Goes on where the last one stopped, or finds the end | [`Generator`](https://www.php.net/manual/en/class.generator.php) object |
+
+To make a source reusable, open it inside the function, so that each read runs the query again.
+To read it only once, call [`Remember()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Remember).
+
 [`Eager()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Eager) reads every value when it is called.
 [`Remember()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Remember) reads each value of the source once, as it is first needed, and keeps it:
 
