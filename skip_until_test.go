@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/mpyw/collect"
 )
@@ -17,4 +18,9 @@ func ExampleKeyedCollection_SkipUntil() {
 
 	fmt.Println(c.Keys().All())
 	// Output: [2 3]
+}
+
+func TestSkipUntilStopsEarly(t *testing.T) {
+	assertStopsEarly(t, endless().SkipUntil(func(v int) bool { return v > 2 }).Seq())
+	assertStopsEarly2(t, endless().Keyed().SkipUntil(func(k, _ int) bool { return k > 2 }).Seq())
 }

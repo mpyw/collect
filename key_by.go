@@ -1,10 +1,10 @@
 package collect
 
-// KeyBy returns the values with key(v) as the key of each v.
-func (c Collection[T]) KeyBy[K comparable](key func(T) K) KeyedCollection[K, T] {
+// KeyBy returns the values with f(v) as the key of each v.
+func (c Collection[T]) KeyBy[K comparable](f func(T) K) KeyedCollection[K, T] {
 	return KeyedCollection[K, T]{seq: func(yield func(K, T) bool) {
 		for v := range c.Seq() {
-			if !yield(key(v), v) {
+			if !yield(f(v), v) {
 				return
 			}
 		}

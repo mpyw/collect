@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/mpyw/collect"
@@ -18,7 +19,7 @@ func TestSplitIn(t *testing.T) {
 	assertChunks(t, collect.Range(1, 10).SplitIn(3), [][]int{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10}})
 	assertChunks(t, collect.Range(1, 7).SplitIn(3), [][]int{{1, 2, 3}, {4, 5, 6}, {7}})
 	assertChunks(t, collect.Of[int]().SplitIn(3), nil)
-	assertPanics(t, func() { collect.Of(1).SplitIn(0) })
+	assertPanicsWith(t, collect.ErrInvalidArgument, func() { collect.Of(1).SplitIn(0) })
 }
 
 func TestSplitInStopsEarly(t *testing.T) {
@@ -35,6 +36,10 @@ func ExampleKeyedCollection_SplitIn() {
 }
 
 func TestKeyedSplitIn(t *testing.T) {
-	assertPanics(t, func() { collect.Of(1).Keyed().SplitIn(0) })
+	assertPanicsWith(t, collect.ErrInvalidArgument, func() { collect.Of(1).Keyed().SplitIn(0) })
 	assertStopsEarly(t, collect.Range(1, 9).Keyed().SplitIn(9).Seq())
+}
+
+func TestSplitInMaxInt(t *testing.T) {
+	assertChunks(t, collect.Of(1, 2).SplitIn(math.MaxInt), [][]int{{1}, {2}})
 }

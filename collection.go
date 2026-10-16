@@ -1,5 +1,5 @@
 // Package collect chains lazy operations on a sequence of values, in the
-// manner of Laravel's Collection.
+// manner of Laravel's LazyCollection.
 //
 // A [Collection] wraps an [iter.Seq]. Its methods build a new sequence and
 // run nothing: the values flow only when a terminal method, such as
@@ -85,16 +85,29 @@ func Identity[T any](v T) T {
 	return v
 }
 
+// Value returns v. It is [Identity] for a [KeyedCollection], whose methods
+// take a key and a value: k.SumBy(collect.Value) sums the values.
+func Value[K, V any](_ K, v V) V {
+	return v
+}
+
+// Key returns k. It is [Identity] for the keys of a [KeyedCollection]:
+// k.SortBy(collect.Key) sorts the pairs by key.
+func Key[K, V any](k K, _ V) K {
+	return k
+}
+
 // Number is the constraint of the values that [Collection.SumBy],
-// [Collection.AvgBy], [Collection.MedianBy] and [Range] compute with.
+// [Collection.AvgBy], [Collection.MedianBy], [Range] and [RangeStep]
+// compute with.
 type Number interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 |
 		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
 		~float32 | ~float64
 }
 
-// Pair holds a value of each of two collections. [Collection.Zip] and
-// [Collection.CrossJoin] return collections of pairs.
+// Pair holds two values. [Collection.Zip] and [Collection.CrossJoin] pair
+// the values of two collections, and [Pairs] pairs each key with its value.
 type Pair[A, B any] struct {
 	First  A
 	Second B
@@ -116,6 +129,14 @@ var (
 	// asked for more values than there are.
 	ErrNotEnoughItems = errors.New("collect: not enough items")
 
+	// ErrInvalidArgument is the panic of a method given an int argument
+	// that cannot be right, such as Chunk(0), as slices.Chunk panics.
+	ErrInvalidArgument = errors.New("collect: invalid argument")
+
+	// ErrUnsupportedKey is the error of [KeyedCollection.MarshalJSONTo] for
+	// a key that encodes as neither a JSON string, number nor boolean.
+	ErrUnsupportedKey = errors.New("collect: unsupported key")
+
 	// ErrUnexpectedValue is the error of [Collection.Ensure], and the panic
 	// of [Collection.MustEnsure], for a value of another type. It is
 	// Laravel's UnexpectedValueException.
@@ -135,6 +156,11 @@ func asType[T, U any](v T) (U, error) {
 		return u, fmt.Errorf("%w: a value of type %T is not %v", ErrUnexpectedValue, v, reflect.TypeFor[U]())
 	}
 	return u, nil
+}
+
+// invalidArgument panics with an error that wraps ErrInvalidArgument.
+func invalidArgument(format string, args ...any) {
+	panic(fmt.Errorf("%w: "+format, append([]any{ErrInvalidArgument}, args...)...))
 }
 
 // pairsOf reads every pair of c into a slice of keys and one of values.
@@ -158,4 +184,26 @@ func keyedOf[K comparable, V any](ks []K, vs []V) KeyedCollection[K, V] {
 			}
 		}
 	}}
+}
+
+// groupsOf groups what each adds by key, in the order the keys first come.
+// It finds a group by its position, not by looking its key up again, so a
+// key that never equals itself, a NaN, is a group of its own each time
+// rather than lost.
+func groupsOf[K comparable, E any](each func(add func(K, E))) ([]K, [][]E) {
+	index := map[K]int{}
+	var (
+		keys   []K
+		groups [][]E
+	)
+	each(func(k K, e E) {
+		i, ok := index[k]
+		if !ok {
+			i = len(keys)
+			index[k] = i
+			keys, groups = append(keys, k), append(groups, nil)
+		}
+		groups[i] = append(groups[i], e)
+	})
+	return keys, groups
 }

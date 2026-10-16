@@ -50,9 +50,11 @@ func sliceBounds(n, offset, length int) (start, end int) {
 		start = max(n+start, 0)
 	}
 	start = min(start, n)
-	end = start + length
+	end = n
 	if length < 0 {
 		end = n + length
+	} else if length < n-start {
+		end = start + length
 	}
 	return start, min(max(end, start), n)
 }

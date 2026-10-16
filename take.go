@@ -1,5 +1,7 @@
 package collect
 
+import "math"
+
 // Take returns a collection of the first n values, or of all of them if
 // there are fewer. It reads no value past the nth, so it ends an endless
 // sequence.
@@ -9,7 +11,7 @@ package collect
 func (c Collection[T]) Take(n int) Collection[T] {
 	if n < 0 {
 		return Collection[T]{seq: func(yield func(T) bool) {
-			for _, v := range takeLast(c.Seq(), -n) {
+			for _, v := range takeLast(c.Seq(), n) {
 				if !yield(v) {
 					return
 				}
@@ -44,7 +46,7 @@ func (c KeyedCollection[K, V]) Take(n int) KeyedCollection[K, V] {
 					yield(Pair[K, V]{k, v})
 				}
 			}
-			for _, p := range takeLast(pairs, -n) {
+			for _, p := range takeLast(pairs, n) {
 				if !yield(p.First, p.Second) {
 					return
 				}
@@ -67,10 +69,17 @@ func (c KeyedCollection[K, V]) Take(n int) KeyedCollection[K, V] {
 	}}
 }
 
-// takeLast returns the last n values of seq, in order, keeping no more
-// than n at a time.
-func takeLast[E any](seq func(func(E) bool), n int) []E {
-	ring := make([]E, 0, n)
+// takeLast returns the last -negative values of seq, in order, keeping no
+// more than that many at a time. math.MinInt, whose negation overflows,
+// takes them all.
+func takeLast[E any](seq func(func(E) bool), negative int) []E {
+	n := -negative
+	if n < 0 {
+		n = math.MaxInt
+	}
+	// The ring grows as values come, so a count far past the length of the
+	// source allocates nothing up front.
+	var ring []E
 	next := 0
 	for v := range seq {
 		if len(ring) < n {

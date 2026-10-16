@@ -3,8 +3,8 @@ package collect
 import "slices"
 
 // Chunk returns the values in collections of size values each. The last
-// one has fewer if the values run out. It panics if size is less than 1,
-// as [slices.Chunk] does.
+// one has fewer if the values run out. It panics with
+// [ErrInvalidArgument] if size is less than 1, as [slices.Chunk] panics.
 //
 // C is always Collection[T], and Go infers it: write c.Chunk(2). See
 // [Collection] for why it is a type parameter. The result is a Collection
@@ -14,7 +14,7 @@ func (c Collection[T]) Chunk[C interface{ Collection[T] }](size int) Collection[
 	return Collection[C]{seq: func(yield func(C) bool) {
 		// Each chunk gets a slice of its own: a chunk may be kept, and
 		// read, after the next one is made. Of copies buf.
-		buf := make([]T, 0, size)
+		buf := make([]T, 0, min(size, chunkInitialCap))
 		for v := range c.Seq() {
 			if buf = append(buf, v); len(buf) < size {
 				continue
@@ -32,15 +32,15 @@ func (c Collection[T]) Chunk[C interface{ Collection[T] }](size int) Collection[
 
 // Chunk returns the pairs in keyed collections of size pairs each, as
 // Laravel's chunk does: each pair keeps its key. The last one has fewer if
-// the pairs run out. It panics if size is less than 1.
+// the pairs run out. It panics with [ErrInvalidArgument] if size is less than 1.
 //
 // C is always KeyedCollection[K, V], and Go infers it, as with
 // [Collection.Chunk].
 func (c KeyedCollection[K, V]) Chunk[C interface{ KeyedCollection[K, V] }](size int) Collection[C] {
 	chunkCheckSize(size)
 	return Collection[C]{seq: func(yield func(C) bool) {
-		ks := make([]K, 0, size)
-		vs := make([]V, 0, size)
+		ks := make([]K, 0, min(size, chunkInitialCap))
+		vs := make([]V, 0, min(size, chunkInitialCap))
 		for k, v := range c.Seq() {
 			if ks, vs = append(ks, k), append(vs, v); len(ks) < size {
 				continue
@@ -56,8 +56,12 @@ func (c KeyedCollection[K, V]) Chunk[C interface{ KeyedCollection[K, V] }](size 
 	}}
 }
 
+// chunkInitialCap caps the room a chunk takes before its values come, so
+// that a size far past the length of the source allocates nothing big.
+const chunkInitialCap = 64
+
 func chunkCheckSize(size int) {
 	if size < 1 {
-		panic("collect: Chunk size must be at least 1")
+		invalidArgument("Chunk size must be at least 1, not %d", size)
 	}
 }

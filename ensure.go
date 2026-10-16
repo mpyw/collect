@@ -1,7 +1,7 @@
 package collect
 
 // Ensure reads every value now, and returns them as U. The error wraps
-// [ErrUnexpectedValue] and names the first value that is not a U. Write U:
+// [ErrUnexpectedValue] and names the type of the first value that is not a U. Write U:
 // c.Ensure[*Dog](). It is not lazy: it has to read every value to know
 // there is no error. [Collection.MustEnsure] is lazy, and panics instead.
 func (c Collection[T]) Ensure[U any]() (Collection[U], error) {

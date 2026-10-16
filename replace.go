@@ -1,7 +1,7 @@
 package collect
 
 // Replace returns the pairs, with the value of other for each key that
-// other has, then the pairs of other whose key comes in neither before. It
+// other has, then the pairs of other whose key the collection does not have. It
 // reads other whole before the first pair. It is also Laravel's merge of
 // keyed collections: a Go key is never renumbered.
 func (c KeyedCollection[K, V]) Replace(other KeyedCollection[K, V]) KeyedCollection[K, V] {

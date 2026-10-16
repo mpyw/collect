@@ -21,7 +21,7 @@ func ExampleCollection_Nth() {
 func TestNth(t *testing.T) {
 	c := letters("abcdef")
 	assertEqual(t, c.Nth(2, -3).All(), []string{"d", "f"})
-	assertPanics(t, func() { c.Nth(0, 0) })
+	assertPanicsWith(t, collect.ErrInvalidArgument, func() { c.Nth(0, 0) })
 }
 
 func TestNthStopsEarly(t *testing.T) {
@@ -35,6 +35,6 @@ func ExampleKeyedCollection_Nth() {
 
 func TestKeyedNth(t *testing.T) {
 	assertEqual(t, letters("abcdef").Keyed().Nth(2, -3).Keys().All(), []int{3, 5})
-	assertPanics(t, func() { collect.Of(1).Keyed().Nth(0, 0) })
+	assertPanicsWith(t, collect.ErrInvalidArgument, func() { collect.Of(1).Keyed().Nth(0, 0) })
 	assertStopsEarly2(t, endless().Keyed().Nth(2, 1).Seq())
 }

@@ -6,17 +6,13 @@ package collect
 // with [Collection.Chunk].
 func (c Collection[T]) GroupBy[K comparable, C interface{ Collection[T] }](f func(T) K) KeyedCollection[K, C] {
 	return KeyedCollection[K, C]{seq: func(yield func(K, C) bool) {
-		groups := map[K][]T{}
-		var order []K
-		for v := range c.Seq() {
-			k := f(v)
-			if _, ok := groups[k]; !ok {
-				order = append(order, k)
+		keys, groups := groupsOf(func(add func(K, T)) {
+			for v := range c.Seq() {
+				add(f(v), v)
 			}
-			groups[k] = append(groups[k], v)
-		}
-		for _, k := range order {
-			if !yield(k, C(FromSlice(groups[k]))) {
+		})
+		for i, k := range keys {
+			if !yield(k, C(FromSlice(groups[i]))) {
 				return
 			}
 		}
@@ -24,29 +20,21 @@ func (c Collection[T]) GroupBy[K comparable, C interface{ Collection[T] }](f fun
 }
 
 // GroupBy groups the pairs by the key f returns for each. Each group keeps
-// the pairs' own keys, as Laravel's groupBy with preserveKeys does. C is
-// always KeyedCollection[K, V], and Go infers it.
+// the pairs' own keys, as Laravel's groupBy with preserveKeys does. It
+// reads every pair before it yields the first group. C is always
+// KeyedCollection[K, V], and Go infers it.
 func (c KeyedCollection[K, V]) GroupBy[G comparable, C interface{ KeyedCollection[K, V] }](f func(K, V) G) KeyedCollection[G, C] {
 	return KeyedCollection[G, C]{seq: func(yield func(G, C) bool) {
-		type group struct {
-			ks []K
-			vs []V
-		}
-		groups := map[G]*group{}
-		var order []G
-		for k, v := range c.Seq() {
-			g := f(k, v)
-			if groups[g] == nil {
-				groups[g] = &group{}
-				order = append(order, g)
+		keys, groups := groupsOf(func(add func(G, Pair[K, V])) {
+			for k, v := range c.Seq() {
+				add(f(k, v), Pair[K, V]{k, v})
 			}
-			groups[g].ks, groups[g].vs = append(groups[g].ks, k), append(groups[g].vs, v)
-		}
-		for _, g := range order {
-			ks, vs := groups[g].ks, groups[g].vs
+		})
+		for i, g := range keys {
+			pairs := groups[i]
 			members := KeyedCollection[K, V]{seq: func(yield func(K, V) bool) {
-				for i, k := range ks {
-					if !yield(k, vs[i]) {
+				for _, p := range pairs {
+					if !yield(p.First, p.Second) {
 						return
 					}
 				}

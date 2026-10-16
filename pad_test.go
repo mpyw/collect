@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/mpyw/collect"
@@ -29,4 +30,9 @@ func TestPadStopsEarly(t *testing.T) {
 	assertStopsEarly(t, collect.Of(1, 2, 3, 4).Pad(2, 0).Seq())
 	assertStopsEarly(t, collect.Of(1).Pad(-10, 0).Seq())
 	assertStopsEarly(t, collect.Of(1, 2, 3, 4).Pad(-6, 0).Seq())
+}
+
+// math.MinInt, whose negation overflows, pads as far as math.MaxInt.
+func TestPadMinInt(t *testing.T) {
+	assertEqual(t, collect.Of(1).Pad(math.MinInt, 0).Take(3).All(), []int{0, 0, 0})
 }

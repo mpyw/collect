@@ -2,8 +2,10 @@ package collect
 
 import "cmp"
 
-// MaxBy returns the greatest of the keys f returns for the values. It is
-// false for an empty collection. Pass [Identity] for a collection of keys.
+// MaxBy returns the greatest of the keys f returns for the values, as
+// Laravel's max returns it: the key, not the value. For the value itself,
+// use SortByDesc(f).First(). It is false for an empty collection. Pass
+// [Identity] for a collection of keys.
 func (c Collection[T]) MaxBy[K cmp.Ordered](f func(T) K) (K, bool) {
 	var (
 		greatest K

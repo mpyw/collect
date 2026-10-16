@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/mpyw/collect"
 )
@@ -22,4 +23,10 @@ func ExampleKeyedCollection_Unless() {
 
 	fmt.Println(collect.Of("a", "b").Keyed().Unless(false, first).Values().All())
 	// Output: [a]
+}
+
+func TestUnlessStopsEarly(t *testing.T) {
+	id := func(c collect.Collection[int]) collect.Collection[int] { return c }
+	assertStopsEarly(t, endless().Unless(false, id).Seq())
+	assertStopsEarly2(t, endless().Keyed().Unless(false, func(c collect.KeyedCollection[int, int]) collect.KeyedCollection[int, int] { return c }).Seq())
 }

@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/mpyw/collect"
 )
@@ -25,4 +26,10 @@ func ExampleKeyedCollection_When() {
 	// Output:
 	// [a]
 	// [a b]
+}
+
+func TestWhenStopsEarly(t *testing.T) {
+	id := func(c collect.Collection[int]) collect.Collection[int] { return c }
+	assertStopsEarly(t, endless().When(true, id).Seq())
+	assertStopsEarly2(t, endless().Keyed().When(true, func(c collect.KeyedCollection[int, int]) collect.KeyedCollection[int, int] { return c }).Seq())
 }

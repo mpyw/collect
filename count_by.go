@@ -5,17 +5,13 @@ package collect
 // yields the first count. Pass [Identity] to count equal values.
 func (c Collection[T]) CountBy[K comparable](f func(T) K) KeyedCollection[K, int] {
 	return KeyedCollection[K, int]{seq: func(yield func(K, int) bool) {
-		counts := map[K]int{}
-		var order []K
-		for v := range c.Seq() {
-			k := f(v)
-			if counts[k] == 0 {
-				order = append(order, k)
+		keys, groups := groupsOf(func(add func(K, struct{})) {
+			for v := range c.Seq() {
+				add(f(v), struct{}{})
 			}
-			counts[k]++
-		}
-		for _, k := range order {
-			if !yield(k, counts[k]) {
+		})
+		for i, k := range keys {
+			if !yield(k, len(groups[i])) {
 				return
 			}
 		}
@@ -27,12 +23,13 @@ func (c Collection[T]) CountBy[K comparable](f func(T) K) KeyedCollection[K, int
 // first count.
 func (c KeyedCollection[K, V]) CountBy[G comparable](f func(K, V) G) KeyedCollection[G, int] {
 	return KeyedCollection[G, int]{seq: func(yield func(G, int) bool) {
-		var gs []G
-		for k, v := range c.Seq() {
-			gs = append(gs, f(k, v))
-		}
-		for g, n := range FromSlice(gs).CountBy(Identity).Seq() {
-			if !yield(g, n) {
+		keys, groups := groupsOf(func(add func(G, struct{})) {
+			for k, v := range c.Seq() {
+				add(f(k, v), struct{}{})
+			}
+		})
+		for i, g := range keys {
+			if !yield(g, len(groups[i])) {
 				return
 			}
 		}

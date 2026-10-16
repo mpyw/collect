@@ -42,3 +42,32 @@ func TestPartitionStopsEarly(t *testing.T) {
 	assertStopsEarly2(t, kin.Seq())
 	assertStopsEarly2(t, kout.Seq())
 }
+
+// A panic keeps nothing, so the next read starts again, rather than return
+// what was read before the panic.
+func TestPartitionAfterPanic(t *testing.T) {
+	calls := 0
+	in, out := collect.Of(1, 2, 3, 4).Partition(func(v int) bool {
+		if calls++; calls == 3 {
+			panic("boom")
+		}
+		return v%2 == 0
+	})
+	func() {
+		defer func() { _ = recover() }()
+		in.All()
+	}()
+	assertEqual(t, in.All(), []int{2, 4})
+	assertEqual(t, out.All(), []int{1, 3})
+	kin, _ := collect.Of(1, 2).Keyed().Partition(func(k, _ int) bool {
+		if calls++; calls == 9 {
+			panic("boom")
+		}
+		return true
+	})
+	func() {
+		defer func() { _ = recover() }()
+		kin.All()
+	}()
+	assertPairs(t, kin, []int{0, 1}, []int{1, 2})
+}

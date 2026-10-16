@@ -14,7 +14,7 @@ func ExampleCollection_DiffBy() {
 	// Output: [1 3 5]
 }
 
-func TestDiffByByKey(t *testing.T) {
+func TestDiffByKeyFunction(t *testing.T) {
 	assertEqual(t, collect.Of("A", "b").DiffBy(collect.Of("a"), strings.ToLower).All(), []string{"b"})
 }
 

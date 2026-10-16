@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"math"
 	"slices"
 	"testing"
 
@@ -44,4 +45,12 @@ func ExampleKeyedCollection_MapToGroups() {
 
 func TestKeyedMapToGroupsStopsEarly(t *testing.T) {
 	assertStopsEarly2(t, collect.Range(1, 9).Keyed().MapToGroups(func(k, v int) (int, int) { return k, v }).Seq())
+}
+
+func TestMapToGroupsNaN(t *testing.T) {
+	nan := math.NaN()
+	groups := collect.Of(1, 2).MapToGroups(func(v int) (float64, int) { return nan, v })
+	assertEqual(t, groups.Map(func(_ float64, g collect.Collection[int]) int { return g.Count() }).Values().All(), []int{1, 1})
+	keyed := collect.Of(1).Keyed().MapToGroups(func(_, v int) (float64, int) { return nan, v })
+	assertEqual(t, keyed.Map(func(_ float64, g collect.Collection[int]) int { return g.Count() }).Values().All(), []int{1})
 }

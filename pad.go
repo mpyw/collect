@@ -1,5 +1,7 @@
 package collect
 
+import "math"
+
 // Pad returns the values, then copies of v until there are size values. A
 // negative size puts the copies before the values, until there are -size,
 // and reads every value first.
@@ -7,7 +9,11 @@ func (c Collection[T]) Pad(size int, v T) Collection[T] {
 	if size < 0 {
 		return Collection[T]{seq: func(yield func(T) bool) {
 			all := c.All()
-			for range -size - len(all) {
+			target := -size
+			if target < 0 {
+				target = math.MaxInt // -math.MinInt overflows.
+			}
+			for range target - len(all) {
 				if !yield(v) {
 					return
 				}

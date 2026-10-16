@@ -1,8 +1,8 @@
 package collect
 
-// DuplicatesBy returns the key, as f returns it, of each value whose key came
-// before, as Laravel's duplicates does. Pass [Identity] for the repeated
-// values themselves.
+// DuplicatesBy returns what f returns for each value, each time it returns
+// what it returned for a value before, as Laravel's duplicates does. Pass
+// [Identity] for the repeated values themselves.
 func (c Collection[T]) DuplicatesBy[K comparable](f func(T) K) Collection[K] {
 	return Collection[K]{seq: func(yield func(K) bool) {
 		seen := map[K]struct{}{}
@@ -19,8 +19,9 @@ func (c Collection[T]) DuplicatesBy[K comparable](f func(T) K) Collection[K] {
 	}}
 }
 
-// DuplicatesBy returns the key f returns for each pair whose key came before,
-// with the pair's own key, as Laravel's duplicates does.
+// DuplicatesBy returns what f returns for each pair, each time it returns
+// what it returned for a pair before, with that pair's own key, as
+// Laravel's duplicates does.
 func (c KeyedCollection[K, V]) DuplicatesBy[E comparable](f func(K, V) E) KeyedCollection[K, E] {
 	return KeyedCollection[K, E]{seq: func(yield func(K, E) bool) {
 		seen := map[E]struct{}{}

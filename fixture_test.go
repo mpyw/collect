@@ -103,19 +103,6 @@ func assertChunks[T comparable](t *testing.T, c collect.Collection[collect.Colle
 	}
 }
 
-// assertPanics checks that f panics.
-//
-//declscope:shared // the tests of the methods that panic on a bad argument
-func assertPanics(t *testing.T, f func()) {
-	t.Helper()
-	defer func() {
-		if recover() == nil {
-			t.Error("did not panic")
-		}
-	}()
-	f()
-}
-
 // letters returns a collection of each letter of s, as a string.
 //
 //declscope:shared // the tests that use Laravel's examples of letters

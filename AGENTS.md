@@ -22,7 +22,9 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 
 ### Both types
 
-- A method exists on both `Collection` and `KeyedCollection`. On `KeyedCollection`, its functions take `(K, V)`, it keeps each pair's key, and a result with an item returns `(K, V, bool)` or `(K, V, error)`.
+- A method exists on both `Collection` and `KeyedCollection`. On `KeyedCollection`, its functions take `(K, V)`, it keeps each pair's key, and a result with an item returns `(K, V, bool)` or `(K, V, error)`. `Value` and `Key` are the `Identity` of such a function.
+- The exception: a function that a method also applies to another collection, or to one side of a pair only, takes only what it compares. `DiffBy`, `IntersectBy`, `DiffAssocBy`, `IntersectAssocBy`, `DiffFunc`, `IntersectFunc` and `FlipBy` take values, and `SortKeysBy` and `SortKeysFunc` keys, so `Identity` fits them.
+- A `KeyedCollection` keeps every key, even where Laravel numbers the pairs again (`Nth`, `Multiply`, `Shuffle`, `RandomN`, `Split`, `FlatMap`). The README lists this difference.
 - These exist on one type only, by design. Keep it so, and add a new exception here with its reason.
 
 | Only on | Methods | Why |
@@ -30,7 +32,7 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 | `Collection` | `Keyed` | A `KeyedCollection` has keys already |
 | `Collection` | `Pad` | A value it adds has no key |
 | `Collection` | `Zip`, `CrossJoin` | A pair has no key, and Laravel drops the keys too. Call `Values()` first |
-| `KeyedCollection` | `Keys`, `Values`, `Get`, `MustGet`, `Has`, `HasAny`, `Only`, `Except`, `FlipBy`, `Union`, `Replace`, `DiffKeys`, `IntersectByKeys`, `DiffAssocBy`, `IntersectAssocBy`, `SortKeysBy`, `SortKeysByDesc`, `SortKeysFunc` | They work on keys. Call `Keyed()` first |
+| `KeyedCollection` | `Keys`, `Values`, `Get`, `MustGet`, `Has`, `HasAny`, `Only`, `Except`, `FlipBy`, `Union`, `Replace`, `DiffKeys`, `IntersectKeys`, `DiffAssocBy`, `IntersectAssocBy`, `SortKeysBy`, `SortKeysByDesc`, `SortKeysFunc` | They work on keys. Call `Keyed()` first |
 
 ### Results and failures
 
@@ -39,11 +41,14 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 | `(T, bool)` | There may be nothing, and that is the only way to fail: `First`, `Get`, `MaxBy` |
 | `(T, error)` | It can fail in more than one way, or the reason matters: `Sole`, `Ensure`, `Combine`, `RandomN` |
 | `T`, and panics | `Must` plus the name of the method above, for a caller who knows it cannot fail. It panics with that method's error |
-| A panic, with no `Must` | An int argument that cannot be right: `Chunk(0)`, `Sliding(0, 1)`, `Nth(0, 0)`, `Split(0)`, `RangeStep` with step 0, `RandomN(-1)` |
+| A panic, with no `Must` | An int argument that cannot be right, where Laravel throws too: `Chunk(0)`, `Sliding(0, 1)`, `Nth(0, 0)`, `Split(0)`, `SplitIn(0)`, `RangeStep` with step 0. It panics with an error that wraps `ErrInvalidArgument`, through `invalidArgument` |
 
 - Every error is, or wraps, one of the package's `Err*` values, with the details in its message.
 - A Laravel method that throws maps to a `Must` method: `firstOrFail` is `MustFirst`, `sole` is `MustSole`, `ensure` is `MustEnsure`.
-- Otherwise follow Laravel's meaning, even where Go would differ: `Take(-n)` takes the last values, and `Slice` takes array_slice's negative values.
+- Otherwise follow Laravel's meaning, even where Go would differ: `Take(-n)` takes the last values, `Slice` and `ForPage` take array_slice's negative values, and `RandomN(-1)` is empty. `Skip(-n)` is the exception: Laravel's lazy and eager forms disagree, so a negative count is 0.
+- An int argument may be anything from `math.MinInt` to `math.MaxInt`. Do not allocate by it before the values come (`Chunk` caps its first buffer), and do not let arithmetic on it overflow (`-math.MinInt`, `(page-1)*perPage`).
+- A map keyed by what a key function returns finds a group by its position, through `groupsOf` in `collection.go`. Looking the key up again loses a NaN, which never equals itself.
+- A method that keeps state across reads (`Partition`, `Remember`) keeps nothing from a read that panicked, or keeps the panic. A later read must never return part of the values as if they were all.
 
 ### Names
 
@@ -51,11 +56,14 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 - The exception is a name Go users expect: `JoinBy` is `ImplodeBy`, under the name of `strings.Join`. Laravel's `join` with a final glue is `JoinFinalBy`.
 - A method whose function returns a key, to compare, order, group or add up, ends in `By`: `SumBy`, `UniqueBy`, `SortBy`, `ImplodeBy`, `WhereInBy`. It is the method that `Identity` turns into Laravel's form with no key. A method whose function returns a bool or a new value has no suffix: `Filter`, `Map`.
 - A method whose function compares two values ends in `Func`, as in the standard library: `sort($callback)` is `SortFunc`, `diffUsing` is `DiffFunc`.
+- `By` is only for a method that takes a key function. Laravel's `intersectByKeys` is `IntersectKeys`, as `diffKeys` is `DiffKeys`.
+- A method that takes another collection takes it first, as Laravel does: `DiffBy(other, f)`, `DiffFunc(other, eq)`. Otherwise the function comes first: `WhereInBy(f, keys...)`, `ImplodeBy(f, sep)`.
+- A function that returns a collection of a `KeyedCollection`'s own pairs is a package function, as `Pairs` is. As a method, it would be an instantiation cycle.
 
 ### JSON
 
 - A collection implements only `MarshalJSONTo` of `encoding/json/v2`. Go 1.27's `encoding/json` calls it too, so there is no `MarshalJSON`.
-- A `KeyedCollection` streams its pairs in order. A key that comes twice is an error, as `encoding/json/v2` rejects duplicate names by default.
+- A `KeyedCollection` streams its pairs in order, always as an object. A key is encoded with the encoder's options, and a key that is not a JSON string, number or boolean is an error that wraps `ErrUnsupportedKey`. A key that comes twice is an error in `encoding/json/v2`, which rejects duplicate names by default, and two members in `encoding/json`.
 
 ### Tests
 
@@ -120,6 +128,11 @@ declscope runs with `.declscope.yaml` (`qualify: ondemand`, `exported: true`).
 | `IsEmpty`, `IsNotEmpty` | They were `_, ok := c.First()` under other names, and they read the first value only to drop it. With a source that can be read once, that value was lost. `First()` returns the value it reads. |
 | `HasSole`, `HasMany` | Like `IsEmpty`, they read up to two values only to drop them. `Sole()` returns the value with its error, and `Take(2).Count() == 2` asks for many. |
 | `Partition` returning two `Filter`s, and `Multiply` reading the source `n` times | A source that can be read once gave an empty second half, or a single copy. |
+| `IntersectByKeys`, Laravel's name | It has `By` and no key function. It is `IntersectKeys`, beside `DiffKeys`. |
+| `ModeBy` returning `[]K` | Every other method that reads every value first returns a collection. It returns `Collection[K]`. |
+| `sync.Once` in `Partition` | A panic during the read counted as done, so later reads returned part of the values. A mutex and a flag set only when the read ends keep nothing from a panic. |
+| `Remember` taking a source's panic as its end | iter.Pull reports the end after a panic, so later reads returned the kept values only. It keeps the panic, and repeats it. |
+| `RangeStep` stopping when `to - n < step` | `to - n` overflows for a signed span past the type's maximum, and a float's last value was lost to rounding. It adds the step, then stops when the next number wraps, does not change, or passes `to`. |
 | `Tap` | It called its function with the collection when called. Any look at the whole, such as `Count()`, read the source early. A source that can be read once was then empty for the rest of the chain. `TapEach` sees each value lazily, and `Pipe` calls a function in a chain. |
 | `ReduceInto` | It passed the result by pointer, as Laravel passes it by reference, because PHP copies arrays. A Go map or slice shares its contents, so `Reduce` does the same with no `(*m)[k]`. |
 | `Pluck("user.name")` and other string paths | They need reflection, and lose the types. Pass a function to `Map`. |

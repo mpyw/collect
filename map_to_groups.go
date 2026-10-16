@@ -6,17 +6,13 @@ package collect
 // in Go.
 func (c Collection[T]) MapToGroups[K comparable, U any](f func(T) (K, U)) KeyedCollection[K, Collection[U]] {
 	return KeyedCollection[K, Collection[U]]{seq: func(yield func(K, Collection[U]) bool) {
-		groups := map[K][]U{}
-		var order []K
-		for v := range c.Seq() {
-			k, u := f(v)
-			if _, ok := groups[k]; !ok {
-				order = append(order, k)
+		keys, groups := groupsOf(func(add func(K, U)) {
+			for v := range c.Seq() {
+				add(f(v))
 			}
-			groups[k] = append(groups[k], u)
-		}
-		for _, k := range order {
-			if !yield(k, FromSlice(groups[k])) {
+		})
+		for i, k := range keys {
+			if !yield(k, FromSlice(groups[i])) {
 				return
 			}
 		}
@@ -27,17 +23,13 @@ func (c Collection[T]) MapToGroups[K comparable, U any](f func(T) (K, U)) KeyedC
 // as [Collection.MapToGroups] does.
 func (c KeyedCollection[K, V]) MapToGroups[G comparable, U any](f func(K, V) (G, U)) KeyedCollection[G, Collection[U]] {
 	return KeyedCollection[G, Collection[U]]{seq: func(yield func(G, Collection[U]) bool) {
-		groups := map[G][]U{}
-		var order []G
-		for k, v := range c.Seq() {
-			g, u := f(k, v)
-			if _, ok := groups[g]; !ok {
-				order = append(order, g)
+		keys, groups := groupsOf(func(add func(G, U)) {
+			for k, v := range c.Seq() {
+				add(f(k, v))
 			}
-			groups[g] = append(groups[g], u)
-		}
-		for _, g := range order {
-			if !yield(g, FromSlice(groups[g])) {
+		})
+		for i, g := range keys {
+			if !yield(g, FromSlice(groups[i])) {
 				return
 			}
 		}

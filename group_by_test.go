@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/mpyw/collect"
@@ -46,4 +47,16 @@ func TestGroupByStopsEarly(t *testing.T) {
 	assertStopsEarly2(t, collect.Range(1, 9).Keyed().GroupBy(func(k, _ int) int { return k }).Seq())
 	odd, _ := collect.Of(1, 3, 5, 7).Keyed().GroupBy(func(int, int) bool { return true }).Get(true)
 	assertStopsEarly2(t, odd.Seq())
+}
+
+// A NaN key never equals itself, so each NaN is a group of its own, and no
+// group is empty.
+func TestGroupByNaN(t *testing.T) {
+	nan := math.NaN()
+	sizes := collect.Of(nan, nan, 1).GroupBy(collect.Identity).
+		Map(func(_ float64, g collect.Collection[float64]) int { return g.Count() })
+	assertEqual(t, sizes.Values().All(), []int{1, 1, 1})
+	keyed := collect.Of(nan, nan).Keyed().GroupBy(func(_ int, v float64) float64 { return v }).
+		Map(func(_ float64, g collect.KeyedCollection[int, float64]) int { return g.Count() })
+	assertEqual(t, keyed.Values().All(), []int{1, 1})
 }

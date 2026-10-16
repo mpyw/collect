@@ -27,3 +27,9 @@ func ExampleKeyedCollection_PipeThrough() {
 func TestPipeThroughNothing(t *testing.T) {
 	assertEqual(t, collect.Of(1, 2).PipeThrough().All(), []int{1, 2})
 }
+
+func TestPipeThroughStopsEarly(t *testing.T) {
+	id := func(c collect.Collection[int]) collect.Collection[int] { return c }
+	assertStopsEarly(t, endless().PipeThrough(id).Seq())
+	assertStopsEarly2(t, endless().Keyed().PipeThrough(func(c collect.KeyedCollection[int, int]) collect.KeyedCollection[int, int] { return c }).Seq())
+}

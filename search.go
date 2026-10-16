@@ -1,7 +1,8 @@
 package collect
 
 // Search returns the index, from 0, of the first value for which match
-// returns true. It is false if there is none.
+// returns true. It is false if there is none. It reads the values in
+// order, as [slices.IndexFunc] does: it is not a binary search.
 func (c Collection[T]) Search(match func(T) bool) (int, bool) {
 	k, _, ok := c.Keyed().FirstWhere(func(_ int, v T) bool { return match(v) })
 	return k, ok

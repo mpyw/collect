@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"math"
 	"slices"
 	"strings"
 	"testing"
@@ -37,4 +38,10 @@ func ExampleKeyedCollection_CountBy() {
 
 func TestKeyedCountByStopsEarly(t *testing.T) {
 	assertStopsEarly2(t, collect.Range(1, 9).Keyed().CountBy(func(k, _ int) int { return k }).Seq())
+}
+
+func TestCountByNaN(t *testing.T) {
+	nan := math.NaN()
+	assertEqual(t, collect.Of(nan, nan, 1).CountBy(collect.Identity).Values().All(), []int{1, 1, 1})
+	assertEqual(t, collect.Of(nan, 1).Keyed().CountBy(collect.Value).Values().All(), []int{1, 1})
 }

@@ -91,3 +91,29 @@ func TestRememberStopsSourceWhenCollected(t *testing.T) {
 		})
 	}
 }
+
+// A panic of the source repeats on every later read past the kept values,
+// rather than end the collection early.
+func TestRememberAfterPanic(t *testing.T) {
+	c := collect.FromSeq(func(yield func(int) bool) {
+		for i := 1; ; i++ {
+			if i == 3 {
+				panic("source died")
+			}
+			if !yield(i) {
+				return
+			}
+		}
+	}).Remember()
+	for range 2 {
+		func() {
+			defer func() {
+				if p := recover(); p != "source died" {
+					t.Errorf("read panicked with %v", p)
+				}
+			}()
+			c.All()
+		}()
+	}
+	assertEqual(t, c.Take(2).All(), []int{1, 2})
+}

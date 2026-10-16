@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/mpyw/collect"
@@ -61,4 +62,10 @@ func TestTakeStopsEarly(t *testing.T) {
 	assertStopsEarly2(t, endless().Keyed().Take(100).Seq())
 	assertStopsEarly(t, collect.Range(1, 9).Take(-5).Seq())
 	assertStopsEarly2(t, collect.Range(1, 9).Keyed().Take(-5).Seq())
+}
+
+// math.MinInt, whose negation overflows, takes every value.
+func TestTakeMinInt(t *testing.T) {
+	assertEqual(t, collect.Of(1, 2).Take(math.MinInt).All(), []int{1, 2})
+	assertEqual(t, collect.Of(1, 2).Keyed().Take(math.MinInt).Values().All(), []int{1, 2})
 }

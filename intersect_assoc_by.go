@@ -1,7 +1,7 @@
 package collect
 
-// IntersectAssocBy returns the pairs that other has too: the same key, with a
-// value of the same key, as f returns it. Pass [Identity] to compare the
+// IntersectAssocBy returns the pairs that other has too: the same key, and
+// a value for which f returns the same. Pass [Identity] to compare the
 // values. When other has a key twice, its last value counts. It reads other
 // whole before the first pair.
 func (c KeyedCollection[K, V]) IntersectAssocBy[E comparable](other KeyedCollection[K, V], f func(V) E) KeyedCollection[K, V] {

@@ -31,3 +31,15 @@ func ExampleKeyedCollection_Percentage() {
 	fmt.Println(c.Percentage(func(_, n int) bool { return n == 1 }, 2))
 	// Output: 33.33 true
 }
+
+// A precision past what a float64 holds rounds nothing, rather than give
+// NaN.
+func TestPercentagePrecision(t *testing.T) {
+	odd := func(v int) bool { return v%2 == 1 }
+	if got, _ := collect.Of(1, 2, 3).Percentage(odd, 400); got != 200.0/3 {
+		t.Errorf("Percentage(400) = %v", got)
+	}
+	if got, _ := collect.Of(1, 2, 3).Percentage(odd, -400); got != 0 {
+		t.Errorf("Percentage(-400) = %v", got)
+	}
+}

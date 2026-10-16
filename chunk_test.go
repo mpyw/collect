@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/mpyw/collect"
@@ -77,8 +78,8 @@ func TestChunkKeepsEachChunk(t *testing.T) {
 }
 
 func TestChunkPanicsBelowOne(t *testing.T) {
-	assertPanics(t, func() { collect.Of(1).Chunk(0) })
-	assertPanics(t, func() { collect.Of(1).Keyed().Chunk(-1) })
+	assertPanicsWith(t, collect.ErrInvalidArgument, func() { collect.Of(1).Chunk(0) })
+	assertPanicsWith(t, collect.ErrInvalidArgument, func() { collect.Of(1).Keyed().Chunk(-1) })
 }
 
 func TestChunkStopsEarly(t *testing.T) {
@@ -88,5 +89,13 @@ func TestChunkStopsEarly(t *testing.T) {
 		for range chunk.Seq() {
 			break
 		}
+	}
+}
+
+// A size far past the length of the source allocates nothing up front.
+func TestChunkMaxInt(t *testing.T) {
+	assertChunks(t, collect.Of(1, 2).Chunk(math.MaxInt), [][]int{{1, 2}})
+	if n := collect.Of(1, 2).Keyed().Chunk(math.MaxInt).Count(); n != 1 {
+		t.Errorf("Chunk(math.MaxInt) has %d chunks, want 1", n)
 	}
 }

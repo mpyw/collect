@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/mpyw/collect"
 )
@@ -12,4 +13,8 @@ func ExampleKeyedCollection_SortKeysBy() {
 
 	fmt.Println(c.Keys().All())
 	// Output: [first id last]
+}
+
+func TestSortKeysByStopsEarly(t *testing.T) {
+	assertStopsEarly2(t, collect.Range(1, 9).Keyed().SortKeysBy(collect.Identity).Seq())
 }

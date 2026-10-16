@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/json/jsontext"
 	jsonv2 "encoding/json/v2"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -85,5 +86,21 @@ func TestMarshalJSONToEncoderErrors(t *testing.T) {
 		if err := jsonv2.MarshalEncode(enc, v); err == nil {
 			t.Errorf("a %s as a name is not an error", name)
 		}
+	}
+}
+
+// The encoder's options apply to the keys too.
+func TestMarshalJSONToKeyOptions(t *testing.T) {
+	type id struct{ N int }
+	byID := jsonv2.WithMarshalers(jsonv2.MarshalFunc(func(v id) ([]byte, error) {
+		return []byte(fmt.Sprintf(`"id-%d"`, v.N)), nil
+	}))
+	got, err := jsonv2.Marshal(keyedOf([]id{{7}}, []int{1}), byID)
+	if err != nil || string(got) != `{"id-7":1}` {
+		t.Errorf("Marshal() = %s, %v", got, err)
+	}
+	type point struct{ X int }
+	if _, err := jsonv2.Marshal(keyedOf([]point{{1}}, []int{1})); !errors.Is(err, collect.ErrUnsupportedKey) {
+		t.Errorf("an object key: %v", err)
 	}
 }

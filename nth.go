@@ -1,10 +1,10 @@
 package collect
 
 // Nth returns every step-th value, starting at offset. A negative offset
-// counts from the end. It panics if step is less than 1, as Laravel throws.
+// counts from the end. It panics with [ErrInvalidArgument] if step is less than 1, as Laravel throws.
 func (c Collection[T]) Nth(step, offset int) Collection[T] {
 	if step < 1 {
-		panic("collect: Nth step must be at least 1")
+		invalidArgument("Nth step must be at least 1, not %d", step)
 	}
 	from := c.Skip(offset)
 	if offset < 0 {
@@ -16,10 +16,10 @@ func (c Collection[T]) Nth(step, offset int) Collection[T] {
 }
 
 // Nth returns every step-th pair, starting at offset, with their keys. A
-// negative offset counts from the end. It panics if step is less than 1.
+// negative offset counts from the end. It panics with [ErrInvalidArgument] if step is less than 1.
 func (c KeyedCollection[K, V]) Nth(step, offset int) KeyedCollection[K, V] {
 	if step < 1 {
-		panic("collect: Nth step must be at least 1")
+		invalidArgument("Nth step must be at least 1, not %d", step)
 	}
 	from := c.Skip(offset)
 	if offset < 0 {

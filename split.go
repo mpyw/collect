@@ -3,11 +3,11 @@ package collect
 // Split returns the values in n groups, as even in size as can be. The
 // first groups have one more value when they cannot all be the same. There
 // are fewer than n groups if there are fewer than n values. It reads every
-// value first, and panics if n is less than 1. C is always Collection[T],
+// value first, and panics with [ErrInvalidArgument] if n is less than 1. C is always Collection[T],
 // and Go infers it.
 func (c Collection[T]) Split[C interface{ Collection[T] }](n int) Collection[C] {
 	if n < 1 {
-		panic("collect: Split needs at least 1 group")
+		invalidArgument("Split needs at least 1 group, not %d", n)
 	}
 	return Collection[C]{seq: func(yield func(C) bool) {
 		all := c.All()
@@ -34,7 +34,7 @@ func (c Collection[T]) Split[C interface{ Collection[T] }](n int) Collection[C] 
 // KeyedCollection[K, V], and Go infers it.
 func (c KeyedCollection[K, V]) Split[C interface{ KeyedCollection[K, V] }](n int) Collection[C] {
 	if n < 1 {
-		panic("collect: Split needs at least 1 group")
+		invalidArgument("Split needs at least 1 group, not %d", n)
 	}
 	return Collection[C]{seq: func(yield func(C) bool) {
 		ks, vs := pairsOf(c)

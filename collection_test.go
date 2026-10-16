@@ -110,3 +110,17 @@ func TestZeroValues(t *testing.T) {
 		t.Error("a zero collection is not empty")
 	}
 }
+
+func ExampleValue() {
+	prices := collect.FromMap(map[string]int{"desk": 200, "chair": 100})
+
+	fmt.Println(prices.SumBy(collect.Value))
+	// Output: 300
+}
+
+func ExampleKey() {
+	c := collect.FromMap(map[string]int{"b": 2, "a": 1, "c": 3}).SortBy(collect.Key)
+
+	fmt.Println(c.Keys().All())
+	// Output: [a b c]
+}

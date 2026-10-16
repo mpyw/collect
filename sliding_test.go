@@ -23,8 +23,8 @@ func TestSliding(t *testing.T) {
 	assertChunks(t, collect.Range(1, 7).Sliding(2, 3), [][]int{{1, 2}, {4, 5}})
 	assertChunks(t, collect.Range(1, 4).Sliding(2, 2), [][]int{{1, 2}, {3, 4}})
 	assertChunks(t, collect.Range(1, 2).Sliding(3, 1), nil)
-	assertPanics(t, func() { collect.Of(1).Sliding(0, 1) })
-	assertPanics(t, func() { collect.Of(1).Sliding(1, 0) })
+	assertPanicsWith(t, collect.ErrInvalidArgument, func() { collect.Of(1).Sliding(0, 1) })
+	assertPanicsWith(t, collect.ErrInvalidArgument, func() { collect.Of(1).Sliding(1, 0) })
 }
 
 // A window stays the same after the next one is made.
@@ -53,6 +53,6 @@ func TestKeyedSliding(t *testing.T) {
 	if want := [][]int{{0, 1}, {3, 4}}; !slices.EqualFunc(got, want, slices.Equal) {
 		t.Errorf("Sliding(2, 3) = %v, want %v", got, want)
 	}
-	assertPanics(t, func() { collect.Of(1).Keyed().Sliding(0, 1) })
+	assertPanicsWith(t, collect.ErrInvalidArgument, func() { collect.Of(1).Keyed().Sliding(0, 1) })
 	assertStopsEarly(t, endless().Keyed().Sliding(2, 1).Seq())
 }

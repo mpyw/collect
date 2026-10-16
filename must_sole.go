@@ -12,7 +12,7 @@ func (c Collection[T]) MustSole() T {
 }
 
 // MustSole returns the only pair. It panics with the error
-// [KeyedCollection.Sole] would return.
+// [KeyedCollection.Sole] would return. It reads at most two.
 func (c KeyedCollection[K, V]) MustSole() (K, V) {
 	k, v, err := c.Sole()
 	if err != nil {

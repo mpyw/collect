@@ -8,11 +8,9 @@ import (
 
 // RandomN reads every value now, and returns n of them chosen at random,
 // in the order they come. The error wraps [ErrNotEnoughItems] if there are
-// fewer than n. It panics if n is negative.
+// fewer than n. A negative n is 0, as in Laravel.
 func (c Collection[T]) RandomN(n int) (Collection[T], error) {
-	if n < 0 {
-		panic("collect: RandomN needs a count of at least 0")
-	}
+	n = max(n, 0)
 	all := c.All()
 	if len(all) < n {
 		return Collection[T]{}, fmt.Errorf("%w: asked for %d, but there are only %d", ErrNotEnoughItems, n, len(all))
@@ -28,11 +26,9 @@ func (c Collection[T]) RandomN(n int) (Collection[T], error) {
 
 // RandomN reads every pair now, and returns n of them chosen at random, in
 // the order they come, with their keys. The error wraps [ErrNotEnoughItems]
-// if there are fewer than n. It panics if n is negative.
+// if there are fewer than n. A negative n is 0, as in Laravel.
 func (c KeyedCollection[K, V]) RandomN(n int) (KeyedCollection[K, V], error) {
-	if n < 0 {
-		panic("collect: RandomN needs a count of at least 0")
-	}
+	n = max(n, 0)
 	ks, vs := pairsOf(c)
 	if len(ks) < n {
 		return KeyedCollection[K, V]{}, fmt.Errorf("%w: asked for %d, but there are only %d", ErrNotEnoughItems, n, len(ks))

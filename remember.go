@@ -11,7 +11,11 @@ import (
 // can be read again.
 //
 // It is not safe for concurrent reads. The source stays open between reads
-// until it ends, or until the collection is garbage collected.
+// until it ends, or until the collection is garbage collected; a source that
+// refers to the collection keeps it alive, and stays open. If the source
+// panics, every later read past the kept values panics the same way. The
+// source must not read the collection past the kept values: that panics
+// too, as iter.Pull does.
 func (c Collection[T]) Remember() Collection[T] {
 	r := &rememberState[T]{source: c.Seq()}
 	return Collection[T]{seq: func(yield func(T) bool) {
@@ -47,10 +51,11 @@ func (c KeyedCollection[K, V]) Remember() KeyedCollection[K, V] {
 }
 
 type rememberState[T any] struct {
-	source iter.Seq[T]
-	next   func() (T, bool)
-	kept   []T
-	done   bool
+	source   iter.Seq[T]
+	next     func() (T, bool)
+	kept     []T
+	done     bool
+	panicked any
 }
 
 // at returns the ith value, from the kept ones, or read from the source.
@@ -59,6 +64,9 @@ func (r *rememberState[T]) at(i int) (T, bool) {
 		return r.kept[i], true
 	}
 	var zero T
+	if r.panicked != nil {
+		panic(r.panicked)
+	}
 	if r.done {
 		return zero, false
 	}
@@ -68,11 +76,25 @@ func (r *rememberState[T]) at(i int) (T, bool) {
 		// A source not read to its end is stopped when no reader is left.
 		runtime.AddCleanup(r, func(stop func()) { stop() }, stop)
 	}
-	v, ok := r.next()
+	v, ok := r.pull()
 	if !ok {
 		r.done = true
 		return zero, false
 	}
 	r.kept = append(r.kept, v)
 	return v, true
+}
+
+// pull reads the next value of the source. If the source panics, iter.Pull
+// reports its end to every later call, so pull keeps the panic and the
+// source is never read again: a later read past the kept values panics the
+// same way, rather than end early.
+func (r *rememberState[T]) pull() (T, bool) {
+	defer func() {
+		if p := recover(); p != nil {
+			r.panicked = p
+			panic(p)
+		}
+	}()
+	return r.next()
 }

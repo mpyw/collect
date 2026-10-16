@@ -35,7 +35,10 @@ func TestRandomN(t *testing.T) {
 	if _, err := collect.Of(1).RandomN(2); !errors.Is(err, collect.ErrNotEnoughItems) {
 		t.Errorf("RandomN(2) of 1: %v", err)
 	}
-	assertPanics(t, func() { _, _ = collect.Of(1).RandomN(-1) })
+	// A negative count is 0, as in Laravel.
+	if c, err := collect.Of(1).RandomN(-1); err != nil || c.Count() != 0 {
+		t.Errorf("RandomN(-1) = %v, %v", c.All(), err)
+	}
 }
 
 func ExampleKeyedCollection_RandomN() {
@@ -61,5 +64,7 @@ func TestKeyedRandomN(t *testing.T) {
 	if _, err := collect.Of(1).Keyed().RandomN(2); !errors.Is(err, collect.ErrNotEnoughItems) {
 		t.Errorf("RandomN(2) of 1: %v", err)
 	}
-	assertPanics(t, func() { _, _ = collect.Of(1).Keyed().RandomN(-1) })
+	if c, err := collect.Of(1).Keyed().RandomN(-1); err != nil || c.Count() != 0 {
+		t.Errorf("RandomN(-1) = %v, %v", c.Keys().All(), err)
+	}
 }

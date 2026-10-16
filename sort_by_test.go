@@ -34,3 +34,8 @@ func TestSortByIsStable(t *testing.T) {
 	users := collect.Of(user{"Alice", 31}, user{"Bob", 19}, user{"Carol", 31}).SortBy(age)
 	assertEqual(t, users.Map(func(u user) string { return u.Name }).All(), []string{"Bob", "Alice", "Carol"})
 }
+
+func TestSortByStopsEarly(t *testing.T) {
+	assertStopsEarly(t, collect.Range(9, 1).SortBy(collect.Identity).Seq())
+	assertStopsEarly2(t, collect.Range(9, 1).Keyed().SortBy(collect.Value).Seq())
+}

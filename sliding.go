@@ -3,12 +3,12 @@ package collect
 import "slices"
 
 // Sliding returns windows of size values, each step values after the one
-// before. Only full windows are returned. It panics if size or step is
+// before. Only full windows are returned. It panics with [ErrInvalidArgument] if size or step is
 // less than 1, as Laravel throws. C is always Collection[T], and Go infers
 // it.
 func (c Collection[T]) Sliding[C interface{ Collection[T] }](size, step int) Collection[C] {
 	if size < 1 || step < 1 {
-		panic("collect: Sliding size and step must be at least 1")
+		invalidArgument("Sliding size and step must be at least 1, not %d and %d", size, step)
 	}
 	return Collection[C]{seq: func(yield func(C) bool) {
 		var window []T
@@ -38,7 +38,7 @@ func (c Collection[T]) Sliding[C interface{ Collection[T] }](size, step int) Col
 // always KeyedCollection[K, V], and Go infers it.
 func (c KeyedCollection[K, V]) Sliding[C interface{ KeyedCollection[K, V] }](size, step int) Collection[C] {
 	if size < 1 || step < 1 {
-		panic("collect: Sliding size and step must be at least 1")
+		invalidArgument("Sliding size and step must be at least 1, not %d and %d", size, step)
 	}
 	return Collection[C]{seq: func(yield func(C) bool) {
 		var (

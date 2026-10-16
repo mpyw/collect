@@ -2,6 +2,7 @@ package collect_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/mpyw/collect"
@@ -51,4 +52,8 @@ func TestSliceStopsEarly(t *testing.T) {
 	assertStopsEarly(t, endless().Slice(1, 100).Seq())
 	assertStopsEarly(t, collect.Range(1, 9).Slice(-8, 5).Seq())
 	assertStopsEarly2(t, collect.Range(1, 9).Keyed().Slice(-8, 5).Seq())
+}
+
+func TestSliceMaxInt(t *testing.T) {
+	assertEqual(t, collect.Range(1, 5).Slice(-3, math.MaxInt).All(), []int{3, 4, 5})
 }
