@@ -16,7 +16,7 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 
 ### Types and the instantiation cycle
 
-- A method whose result nests the receiver's type pins a type parameter instead of naming the nested type. `Chunk` is `Chunk[C interface{ Collection[T] }](size int) Collection[C]`, and converts each chunk with `C(...)`. Go infers `C`, so callers never write it. `GroupBy`, `ChunkWhile`, `ChunkBy`, `Sliding`, `Split` and `SplitIn` do the same, and `Zip`, `CrossJoin` and `Entries` pin `E interface{ Entry[...] }`. `Zip3` to `Zip5` pin `Z interface{ Tuple3[...] }` and so on.
+- A method whose result nests the receiver's type pins a type parameter instead of naming the nested type. `Chunk` is `Chunk[C interface{ Collection[T] }](size int) Collection[C]`, and converts each chunk with `C(...)`. Go infers `C`, so callers never write it. `GroupBy`, `ChunkWhile`, `ChunkBy`, `Sliding`, `Split` and `SplitIn` do the same, and `Entries` pins `E interface{ Entry[...] }`. `Zip` and `CrossJoin` pin `Z interface{ Tuple2[T, U] }`, and `Zip3` to `Zip5` the tuples of their counts.
 - Never name a nested type in a method, in its signature or its body: `Collection[Collection[T]]`, or `Collection[Entry[K, V]]` in a method of `KeyedCollection`. It is an "instantiation cycle" (golang/go#80172): the compiler instantiates every method of the nested type, then of a deeper one, without end. A pinned `C` is instantiated only by a call, so only as deep as calls go. Package functions and the caller's code are not checked this way.
 - A method must not call a pinned method of the package's own types either, such as `c.Chunk(n)` inside `SplitIn`. The call instantiates `C` as the nested type, which is the same cycle. Loop by hand. To keep pairs, use `pairsOf` and `keyedOf` in `collection.go`, or a `rememberState[Pair[K, V]]`, which has no methods that lead back.
 - `Collection[T any]` cannot add a constraint to `T` in a method. A method that needs numbers, an order or equality takes a key function with its own type parameter, such as `SumBy[N Number](f func(T) N)`. Callers pass `Identity` for Laravel's form with no key. Do not use `any` as a map key to get equality: it compiles for every `T` and panics on a slice.
@@ -88,7 +88,7 @@ Read the matching one in `.agents/skills/` before you start.
 
 | File | Holds |
 | --- | --- |
-| `collection.go` | Core and shared: every type, the sources `Of` and `From*`, `Identity`, `Value`, `Key`, `Number`, `Entry`, the `Err*` values, and helpers several files use |
+| `collection.go` | Core and shared: every type, the sources `Of` and `From*`, `Identity`, `Value`, `Key`, `Number`, `Entry`, the tuples, the `Err*` values, and helpers several files use |
 | `<method>.go` | One method, for every type that has it: `map.go` holds the `Map` of `Collection` and of `KeyedCollection` |
 | `<method>_test.go` | The examples and tests of that method, for every type |
 | `fixture_test.go` | Test helpers that several test files use, each `//declscope:shared` |
@@ -137,6 +137,7 @@ declscope runs with `.declscope.yaml` (`qualify: ondemand`, `exported: true`).
 | `Pairs`, a package function, and `Pair{First, Second}` | A method can return the pairs lazily by pinning a type parameter, so it is `Entries`, after ECMAScript. `Entry{Key, Value}` names what a pair holds. |
 | `Zip6` and more | Six collections zipped at once are rare, and each count is a method and a tuple type. Five covers Laravel's common uses. |
 | `Combine` padding with zero values, as `Zip` does | A missing key would be the zero value each time, so `ToMap` would merge them, and lose values without a word. Laravel's combine throws a ValueError, and `Combine` returns `ErrLengthMismatch`. |
+| `Entry` for what `Zip` returns | An entry is a key and its value. Neither value of a zip is the key of the other, so it is a `Tuple2`, beside `Tuple3` to `Tuple5`. |
 | `Tap` | It called its function with the collection when called. Any look at the whole, such as `Count()`, read the source early. A source that can be read once was then empty for the rest of the chain. `TapEach` sees each value lazily, and `Pipe` calls a function in a chain. |
 | `ReduceInto` | It passed the result by pointer, as Laravel passes it by reference, because PHP copies arrays. A Go map or slice shares its contents, so `Reduce` does the same with no `(*m)[k]`. |
 | `Pluck("user.name")` and other string paths | They need reflection, and lose the types. Pass a function to `Map`. |

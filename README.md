@@ -316,7 +316,7 @@ quads.MustFirst().MustFirst().All() // [1 2]
 > A method of [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) cannot return [`Collection[Collection[T]]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) in Go.
 > The compiler reports an "instantiation cycle" ([golang/go#80172](https://github.com/golang/go/issues/80172)).
 > The type parameter `C` avoids that, and the result is the same type.
-> [`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin) return [`Entry`](https://pkg.go.dev/github.com/mpyw/collect#Entry) values the same way.
+> [`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin) return [`Tuple2`](https://pkg.go.dev/github.com/mpyw/collect#Tuple2) values the same way.
 
 ## JSON
 
@@ -771,7 +771,7 @@ $a->zip($b, $c);
 [`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip), [`Zip3`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip3), [`Zip4`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip4), [`Zip5`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip5)
 
 ```go
-a.Zip(b)     // Entry{Key, Value}
+a.Zip(b)     // Tuple2{A, B}
 a.Zip3(b, c) // Tuple3{A, B, C}
 ```
 
@@ -1176,7 +1176,7 @@ Go has no argument spread
 </td>
 <td>
 
-Take a struct or an [`Entry`](https://pkg.go.dev/github.com/mpyw/collect#Entry)
+Take a struct or a [`Tuple2`](https://pkg.go.dev/github.com/mpyw/collect#Tuple2)
 
 </td>
 </tr>

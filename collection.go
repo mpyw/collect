@@ -109,11 +109,17 @@ type Number interface {
 // Entry holds a key and its value, as an entry of an ECMAScript Map does.
 // [KeyedCollection.Entries] returns the entries of a keyed collection, and
 // [Collection.Entries] those of a collection with its indexes as keys.
-// [Collection.Zip] and [Collection.CrossJoin] also pair a value of one
-// collection, as Key, with a value of another, as Value.
 type Entry[K, V any] struct {
 	Key   K
 	Value V
+}
+
+// Tuple2 holds a value of each of two collections. [Collection.Zip] and
+// [Collection.CrossJoin] return them. It is not an [Entry]: neither value
+// is the key of the other.
+type Tuple2[A, B any] struct {
+	A A
+	B B
 }
 
 // Tuple3 holds a value of each of three collections. [Collection.Zip3]
