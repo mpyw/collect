@@ -114,7 +114,7 @@ type Entry[K, V any] struct {
 	Value V
 }
 
-// Tuple2 holds a value of each of two collections. [Collection.Zip] and
+// Tuple2 holds a value of each of two collections. [Collection.Zip2] and
 // [Collection.CrossJoin] return them. It is not an [Entry]: neither value
 // is the key of the other.
 type Tuple2[A, B any] struct {

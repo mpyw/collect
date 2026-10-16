@@ -282,7 +282,7 @@ odd.Values().All() // [11 13]
 ```
 
 A [`KeyedCollection[K, V]`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection) wraps an [`iter.Seq2[K, V]`](https://pkg.go.dev/iter#Seq2).
-It has every method of [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) but [`Keyed`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed), [`Pad`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Pad), [`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin), and each keeps the keys.
+It has every method of [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) but [`Keyed`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed), [`Pad`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Pad), [`Zip2`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip2) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin), and each keeps the keys.
 Its functions take the key first, as [`maps.All`](https://pkg.go.dev/maps#All) yields it.
 A method that returns a value returns the pair instead: [`First()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First) is `(K, V, bool)`.
 It also has the methods of keys: [`Get`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Get), [`Has`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Has), [`Only`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Only), [`Except`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Except), [`FlipBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.FlipBy), [`Union`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Union), [`Replace`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Replace), [`DiffKeys`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffKeys), [`SortKeysBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysBy) and more.
@@ -316,7 +316,7 @@ quads.MustFirst().MustFirst().All() // [1 2]
 > A method of [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) cannot return [`Collection[Collection[T]]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) in Go.
 > The compiler reports an "instantiation cycle" ([golang/go#80172](https://github.com/golang/go/issues/80172)).
 > The type parameter `C` avoids that, and the result is the same type.
-> [`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin) return [`Tuple2`](https://pkg.go.dev/github.com/mpyw/collect#Tuple2) values the same way.
+> [`Zip2`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip2) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin) return [`Tuple2`](https://pkg.go.dev/github.com/mpyw/collect#Tuple2) values the same way.
 
 ## JSON
 
@@ -768,10 +768,10 @@ $a->zip($b, $c);
 </td>
 <td>
 
-[`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip), [`Zip3`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip3), [`Zip4`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip4), [`Zip5`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip5)
+[`Zip2`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip2), [`Zip3`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip3), [`Zip4`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip4), [`Zip5`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip5)
 
 ```go
-a.Zip(b)     // Tuple2{A, B}
+a.Zip2(b)    // Tuple2{A, B}
 a.Zip3(b, c) // Tuple3{A, B, C}
 ```
 
@@ -1111,6 +1111,26 @@ collect.FromSlice(values)
 <td>
 
 [`IntersectKeys`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.IntersectKeys), named as [`DiffKeys`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffKeys) is
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`zip`](https://laravel.com/framework/docs/collections#method-zip)
+
+```php
+$a->zip($b);
+```
+
+</td>
+<td>
+
+[`Zip2`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip2), and [`Zip3`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip3) to [`Zip5`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip5) for more
+
+```go
+a.Zip2(b)
+```
 
 </td>
 </tr>

@@ -3,7 +3,7 @@ package collect
 import "iter"
 
 // Zip5 returns each value with the values of us, vs, ws and xs at the same
-// place, as a [Tuple5], as [Collection.Zip] does for two collections. It
+// place, as a [Tuple5], as [Collection.Zip2] does for two collections. It
 // goes on to the end of the longest of the five: a missing value is the
 // zero value. Z is always Tuple5[T, U, V, W, X], and Go infers it.
 func (c Collection[T]) Zip5[U, V, W, X any, Z interface{ Tuple5[T, U, V, W, X] }](us Collection[U], vs Collection[V], ws Collection[W], xs Collection[X]) Collection[Z] {
