@@ -746,7 +746,7 @@ A [`KeyedCollection`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection
 [`diffUsing`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_diffUsing), [`intersectUsing`](https://laravel.com/framework/docs/collections#method-intersectusing)
 
 ```php
-$c->diffUsing($other, fn ($a, $b) => strcasecmp($a, $b));
+$c->diffUsing($other, strcasecmp(...));
 ```
 
 </td>
