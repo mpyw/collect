@@ -9,6 +9,7 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 - Every operation is lazy unless it is a terminal one (`All`, `Count`, `First`, `SumBy` and the like). A lazy method returns a new value whose sequence runs only when read.
 - A method that must read every value first, such as `SortBy` or `GroupBy`, does so when its result is read, not when it is called. Only `Eager`, `Ensure`, `Combine` and `RandomN` read when called, as their names or results say.
 - A read of a result reads the source at most once. A method with two results reads once for both and keeps them, as `Partition` does. A method that repeats keeps what it read, as `Multiply` does. Laravel reads them once too.
+- `IsEmpty`, `IsNotEmpty`, `HasSole` and `HasMany` read values only to answer, as Laravel's do. Their docs say that a source that can be read once loses them, and to call `Remember` first. Keep that note on any method like them.
 - Every loop over a source returns as soon as `yield` returns false. Each lazy method's test calls `assertStopsEarly` or `assertStopsEarly2` on an endless source, for every type that has the method.
 - `Of` copies its arguments. A chunk, a window or a group gets slices of its own. A value a caller holds never changes when the source does.
 - `FromSlice` and `FromMap` do not copy, on purpose: they are the way to read a large slice or map without one. Do not add a copy to them. A source that copies has no reason to exist beside `Of`.
@@ -126,8 +127,6 @@ declscope runs with `.declscope.yaml` (`qualify: ondemand`, `exported: true`).
 | `Sum`, `Unique`, `Implode` and the like, with no `By` | They took a key function as `SortBy` and `GroupBy` do, under another kind of name. Every method that takes a key ends in `By`, as in samber/lo. |
 | `WithHeartbeat`, `Throttle`, `TakeUntilTimeout` | They looked at the clock only when a value came, so a slow source delayed every beat and every deadline. `Throttle` slept inside the iterator, which no `context` could stop. |
 | `WhenEmpty`, `WhenNotEmpty` | Deciding when read meant reading the first value twice: a source that can be read once lost it. Deciding when called would read the source early. |
-| `IsEmpty`, `IsNotEmpty` | They were `_, ok := c.First()` under other names, and they read the first value only to drop it. With a source that can be read once, that value was lost. `First()` returns the value it reads. |
-| `HasSole`, `HasMany` | Like `IsEmpty`, they read up to two values only to drop them. `Sole()` returns the value with its error, and `Take(2).Count() == 2` asks for many. |
 | `Partition` returning two `Filter`s, and `Multiply` reading the source `n` times | A source that can be read once gave an empty second half, or a single copy. |
 | `IntersectByKeys`, Laravel's name | It has `By` and no key function. It is `IntersectKeys`, beside `DiffKeys`. |
 | `ModeBy` returning `[]K` | Every other method that reads every value first returns a collection. It returns `Collection[K]`. |

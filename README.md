@@ -339,6 +339,7 @@ b, _ := json.Marshal(collect.Of("x", "y").Keyed())
 | --- | --- |
 | `fmt.Println(c)`, `==` and [`reflect.DeepEqual`](https://pkg.go.dev/reflect#DeepEqual) see a function, not the values | Compare [`c.All()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.All), and range over [`c.Seq()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Seq) |
 | A key that is `comparable` but holds a slice in an interface, such as `any`, panics in a map | Return a hashable key from the key function |
+| [`IsEmpty`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IsEmpty), [`HasSole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasSole), [`HasMany`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasMany) and [`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First) read values only to answer, and a source that can be read once loses them | Call [`Remember()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Remember) first |
 | [`FlatMap(collect.Of)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FlatMap) does not compile, as [`Of`](https://pkg.go.dev/github.com/mpyw/collect#Of) is variadic | Pass [`collect.FromSlice`](https://pkg.go.dev/github.com/mpyw/collect#FromSlice) |
 | Your own generic type with a method that returns itself over [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) is an instantiation cycle too | Pin a type parameter, as [`Entries`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Entries) does |
 
@@ -796,41 +797,21 @@ c.Contains(func(v int) bool { return v > 1 })
 <tr>
 <td>
 
-[`hasSole`](https://laravel.com/framework/docs/collections#method-hassole), [`containsOneItem`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsOneItem)
+[`containsOneItem`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsOneItem), [`containsManyItems`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsManyItems)
 
 ```php
-$c->hasSole();
 $c->containsOneItem();
-```
-
-</td>
-<td>
-
-[`Sole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Sole)
-
-```go
-_, err := c.Sole() // returns the value too
-```
-
-</td>
-</tr>
-<tr>
-<td>
-
-[`hasMany`](https://laravel.com/framework/docs/collections#method-hasmany), [`containsManyItems`](https://api.laravel.com/docs/master/Illuminate/Support/LazyCollection.html#method_containsManyItems)
-
-```php
-$c->hasMany();
 $c->containsManyItems();
 ```
 
 </td>
 <td>
 
-[`Take`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Take), [`Count`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Count)
+[`HasSole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasSole), [`HasMany`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasMany)
 
 ```go
-c.Take(2).Count() == 2
+c.HasSole()
+c.HasMany()
 ```
 
 </td>
@@ -924,27 +905,6 @@ $users->firstWhere('name', 'x');
 ```go
 users.Map(func(u User) string { return u.Name }).First()
 users.FirstWhere(func(u User) bool { return u.Name == "x" })
-```
-
-</td>
-</tr>
-<tr>
-<td>
-
-[`isEmpty`](https://laravel.com/framework/docs/collections#method-isempty), [`isNotEmpty`](https://laravel.com/framework/docs/collections#method-isnotempty)
-
-```php
-$c->isEmpty();
-$c->isNotEmpty();
-```
-
-</td>
-<td>
-
-[`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First)
-
-```go
-_, ok := c.First()
 ```
 
 </td>
@@ -1212,10 +1172,13 @@ They read the first value twice, which breaks a source that can be read once
 </td>
 <td>
 
-[`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First)
+[`IsEmpty`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IsEmpty), [`Remember`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Remember)
 
 ```go
-first, ok := c.First()
+c = c.Remember() // for a source read once
+if c.IsEmpty() {
+	// ...
+}
 ```
 
 </td>
