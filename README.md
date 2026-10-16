@@ -54,11 +54,29 @@ squares := collect.FromSeq(naturals).
 | [`Times(n, f)`](https://pkg.go.dev/github.com/mpyw/collect#Times) | What `f` returns for 1 to `n` |
 | [`Combine(keys, values)`](https://pkg.go.dev/github.com/mpyw/collect#Combine) | Two collections, as the keys and the values of a keyed collection |
 
-> [!NOTE]
-> A collection is as reusable as its source: each read reads the source again.
-> One from [`Of`](https://pkg.go.dev/github.com/mpyw/collect#Of), [`FromSlice`](https://pkg.go.dev/github.com/mpyw/collect#FromSlice) or [`FromMap`](https://pkg.go.dev/github.com/mpyw/collect#FromMap) can be read any number of times.
-> One from [`FromSeq`](https://pkg.go.dev/github.com/mpyw/collect#FromSeq) can be read as many times as its [`iter.Seq`](https://pkg.go.dev/iter#Seq) allows.
-> [`Eager()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Eager) makes a finite collection reusable, and [`Remember()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Remember) any collection.
+A collection reads its source again on each read, so it is as reusable as its source.
+One from [`Of`](https://pkg.go.dev/github.com/mpyw/collect#Of), [`FromSlice`](https://pkg.go.dev/github.com/mpyw/collect#FromSlice) or [`FromMap`](https://pkg.go.dev/github.com/mpyw/collect#FromMap) reads the same values every time, and needs no [`Remember()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Remember):
+
+```go
+evens := collect.Of(1, 2, 3, 4).Filter(func(n int) bool { return n%2 == 0 })
+
+evens.All() // [2 4]
+evens.All() // [2 4], read again from the start
+```
+
+One from [`FromSeq`](https://pkg.go.dev/github.com/mpyw/collect#FromSeq) can be read as many times as its [`iter.Seq`](https://pkg.go.dev/iter#Seq) allows.
+A source that can be read only once, such as a database cursor, is used up by the first read.
+[`Eager()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Eager) makes a finite collection reusable, and [`Remember()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Remember) any collection:
+
+```go
+once := collect.FromSeq(openCursor())
+once.All() // [1 2 3]
+once.All() // [], the cursor is used up
+
+kept := collect.FromSeq(openCursor()).Remember()
+kept.All() // [1 2 3]
+kept.All() // [1 2 3], from what Remember kept
+```
 
 [`Eager()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Eager) reads every value when it is called.
 [`Remember()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Remember) reads each value of the source once, as it is first needed, and keeps it:

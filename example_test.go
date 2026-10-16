@@ -84,3 +84,44 @@ func Example() {
 	// dave: true
 	// squares: [1 4 9 16 25]
 }
+
+// A collection reads its source again on each read. One from Of, FromSlice
+// or FromMap reads the same values every time, so it needs no Remember. A
+// source that can be read only once, such as a database cursor, is used up
+// by the first read: Remember keeps what it reads.
+func Example_reuse() {
+	evens := collect.Of(1, 2, 3, 4).Filter(func(n int) bool { return n%2 == 0 })
+	fmt.Println(evens.All()) // [2 4]
+	fmt.Println(evens.All()) // [2 4], read again from the start
+
+	cursor := func() func(func(int) bool) {
+		used := false
+		return func(yield func(int) bool) {
+			if used {
+				return
+			}
+			used = true
+			for n := 1; n <= 3; n++ {
+				if !yield(n) {
+					return
+				}
+			}
+		}
+	}
+
+	once := collect.FromSeq(cursor())
+	fmt.Println(once.All()) // [1 2 3]
+	fmt.Println(once.All()) // [], the cursor is used up
+
+	kept := collect.FromSeq(cursor()).Remember()
+	fmt.Println(kept.All()) // [1 2 3]
+	fmt.Println(kept.All()) // [1 2 3], from what Remember kept
+
+	// Output:
+	// [2 4]
+	// [2 4]
+	// [1 2 3]
+	// []
+	// [1 2 3]
+	// [1 2 3]
+}

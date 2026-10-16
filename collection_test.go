@@ -124,3 +124,78 @@ func ExampleKey() {
 	fmt.Println(c.Keys().All())
 	// Output: [a b c]
 }
+
+// Every source that reads the same values each time gives the same result
+// to each read of a chain, with no Remember.
+func TestReusableSources(t *testing.T) {
+	chain := func(c collect.Collection[int]) []int {
+		return c.
+			Filter(func(v int) bool { return v != 3 }).
+			Map(func(v int) int { return v * 10 }).
+			SortByDesc(collect.Identity).
+			Chunk(2).
+			FlatMap(collect.Identity).
+			All()
+	}
+	combined, err := collect.Combine(collect.Of("a", "b", "c", "d"), collect.Of(1, 2, 3, 4))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, c := range map[string]collect.Collection[int]{
+		"Of":        collect.Of(1, 2, 3, 4),
+		"FromSlice": collect.FromSlice([]int{1, 2, 3, 4}),
+		"FromMap":   collect.FromMap(map[string]int{"a": 1, "b": 2, "c": 3, "d": 4}).Values(),
+		"FromSeq":   collect.FromSeq(slices.Values([]int{1, 2, 3, 4})),
+		"Range":     collect.Range(1, 4),
+		"Times":     collect.Times(4, collect.Identity[int]),
+		"Combine":   combined.Values(),
+		"Eager":     once(1, 2, 3, 4).Eager(),
+		"Remember":  once(1, 2, 3, 4).Remember(),
+	} {
+		t.Run(name, func(t *testing.T) {
+			for range 3 {
+				assertEqual(t, chain(c), []int{40, 20, 10})
+			}
+		})
+	}
+}
+
+// Each read of a chain reads its source again: nothing is kept between
+// reads but by Remember, Eager and Partition.
+func TestEachReadReadsTheSource(t *testing.T) {
+	starts := 0
+	source := collect.FromSeq(func(yield func(int) bool) {
+		starts++
+		for _, v := range []int{1, 2, 3} {
+			if !yield(v) {
+				return
+			}
+		}
+	})
+	chain := source.Map(func(v int) int { return v * 2 }).Filter(func(v int) bool { return v > 2 })
+	chain.All()
+	chain.All()
+	if starts != 2 {
+		t.Errorf("two reads started the source %d times, want 2", starts)
+	}
+	kept := chain.Remember()
+	kept.All()
+	kept.All()
+	if starts != 3 {
+		t.Errorf("two reads of Remember started the source %d more times, want 1", starts-2)
+	}
+}
+
+// A source that can be read once is empty on its second read, unless
+// Remember or Eager keeps it.
+func TestSingleUseSource(t *testing.T) {
+	c := once(1, 2)
+	assertEqual(t, c.All(), []int{1, 2})
+	assertEqual(t, c.All(), nil)
+	kept := once(1, 2).Remember()
+	assertEqual(t, kept.All(), []int{1, 2})
+	assertEqual(t, kept.All(), []int{1, 2})
+	eager := once(1, 2).Eager()
+	assertEqual(t, eager.All(), []int{1, 2})
+	assertEqual(t, eager.All(), []int{1, 2})
+}
