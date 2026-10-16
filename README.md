@@ -335,13 +335,128 @@ b, _ := json.Marshal(collect.Of("x", "y").Keyed())
 
 ## Go pitfalls
 
-| Pitfall | Do this |
-| --- | --- |
-| `fmt.Println(c)`, `==` and [`reflect.DeepEqual`](https://pkg.go.dev/reflect#DeepEqual) see a function, not the values | Compare [`c.All()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.All), and range over [`c.Seq()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Seq) |
-| A key that is `comparable` but holds a slice in an interface, such as `any`, panics in a map | Return a hashable key from the key function |
-| [`IsEmpty`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IsEmpty), [`HasSole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasSole), [`HasMany`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasMany) and [`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First) read values only to answer, and a source that can be read once loses them | Call [`Remember()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Remember) first |
-| [`FlatMap(collect.Of)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FlatMap) does not compile, as [`Of`](https://pkg.go.dev/github.com/mpyw/collect#Of) is variadic | Pass [`collect.FromSlice`](https://pkg.go.dev/github.com/mpyw/collect#FromSlice) |
-| Your own generic type with a method that returns itself over [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) is an instantiation cycle too | Pin a type parameter, as [`Entries`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Entries) does |
+<table>
+<tr><th>Pitfall</th><th>Wrong</th><th>Right</th></tr>
+<tr>
+<td>
+
+A collection holds a function, not its values. [`fmt`](https://pkg.go.dev/fmt), `==` and [`reflect.DeepEqual`](https://pkg.go.dev/reflect#DeepEqual) see the function
+
+</td>
+<td>
+
+```go
+fmt.Println(c)           // {0x102188f00}
+reflect.DeepEqual(a, b)  // false, even with the same values
+a == b                   // does not compile
+```
+
+</td>
+<td>
+
+```go
+fmt.Println(c.All())         // [1 2]
+slices.Equal(a.All(), b.All()) // true
+for v := range c.Seq() {}
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`IsEmpty`](https://pkg.go.dev/github.com/mpyw/collect#Collection.IsEmpty), [`HasSole`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasSole), [`HasMany`](https://pkg.go.dev/github.com/mpyw/collect#Collection.HasMany) and [`First`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First) read values only to answer. A source that can be read once loses them
+
+</td>
+<td>
+
+```go
+rows := collect.FromSeq(cursor)
+if rows.IsEmpty() {
+	return
+}
+rows.All() // lost what IsEmpty read
+```
+
+</td>
+<td>
+
+```go
+rows := collect.FromSeq(cursor).Remember()
+if rows.IsEmpty() {
+	return
+}
+rows.All() // every row
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+A key that is `comparable` but holds a slice in an interface, such as `any`, panics in a map
+
+</td>
+<td>
+
+```go
+c.UniqueBy(func(s []int) any { return s })
+// panic: hash of unhashable type: []int
+```
+
+</td>
+<td>
+
+```go
+c.UniqueBy(func(s []int) string { return fmt.Sprint(s) })
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+[`Of`](https://pkg.go.dev/github.com/mpyw/collect#Of) is variadic, so it does not fit a function that takes a slice
+
+</td>
+<td>
+
+```go
+c.FlatMap(collect.Of) // does not compile
+```
+
+</td>
+<td>
+
+```go
+c.FlatMap(collect.FromSlice)
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+A method of your own generic type that returns it over [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) is an instantiation cycle too
+
+</td>
+<td>
+
+```go
+func (b Box[T]) Rows() Box[collect.Collection[T]]
+// instantiation cycle
+```
+
+</td>
+<td>
+
+```go
+func Rows[T any](b Box[T]) Box[collect.Collection[T]]
+```
+
+</td>
+</tr>
+</table>
 
 ## Differences from Laravel
 
