@@ -1,10 +1,16 @@
+<div align="center">
+
+<img src=".github/assets/icon.png" width="200" alt="A Go gopher holding a chain of colored blocks that trails off into dots">
+
 # collect
+
+Lazy, chainable collections for Go, in the manner of [Laravel's LazyCollection](https://laravel.com/framework/docs/collections#lazy-collections).
 
 [![Test](https://github.com/mpyw/collect/actions/workflows/test.yml/badge.svg)](https://github.com/mpyw/collect/actions/workflows/test.yml)
 [![Coverage](https://codecov.io/gh/mpyw/collect/graph/badge.svg)](https://codecov.io/gh/mpyw/collect)
 [![Go Reference](https://pkg.go.dev/badge/github.com/mpyw/collect.svg)](https://pkg.go.dev/github.com/mpyw/collect)
 
-Lazy, chainable collections for Go, in the manner of [Laravel's LazyCollection](https://laravel.com/docs/collections#lazy-collections).
+</div>
 
 > [!WARNING]
 > This is an early draft. The API may change.
