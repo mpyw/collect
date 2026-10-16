@@ -12,7 +12,7 @@ func ExampleKeyedCollection_IntersectAssocBy() {
 	c := keyedOf([]string{"color", "size", "material"}, []string{"red", "M", "cotton"})
 	got := c.IntersectAssocBy(keyedOf([]string{"color", "size", "material"}, []string{"blue", "M", "polyester"}), collect.Identity)
 
-	fmt.Println(got.All())
+	fmt.Println(got.ToMap())
 	// Output: map[size:M]
 }
 

@@ -98,7 +98,7 @@ func TestFromMapReadsWithNoCopy(t *testing.T) {
 	m := map[string]int{"a": 1}
 	c := collect.FromMap(m)
 	m["b"] = 2
-	if got := c.All(); !maps.Equal(got, m) {
+	if got := c.ToMap(); !maps.Equal(got, m) {
 		t.Errorf("All() = %v, want %v", got, m)
 	}
 }

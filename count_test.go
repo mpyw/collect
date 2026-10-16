@@ -15,6 +15,6 @@ func ExampleCollection_Count() {
 func ExampleKeyedCollection_Count() {
 	c := collect.Of("apple", "avocado").KeyBy(func(s string) string { return s[:1] })
 
-	fmt.Println(c.Count(), len(c.All()))
+	fmt.Println(c.Count(), len(c.ToMap()))
 	// Output: 2 1
 }

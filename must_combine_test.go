@@ -9,7 +9,7 @@ import (
 )
 
 func ExampleMustCombine() {
-	fmt.Println(collect.MustCombine(collect.Of("a", "b"), collect.Range(1, 2)).All())
+	fmt.Println(collect.MustCombine(collect.Of("a", "b"), collect.Range(1, 2)).ToMap())
 	// Output: map[a:1 b:2]
 }
 
@@ -23,7 +23,7 @@ func TestMustCombine(t *testing.T) {
 					t.Errorf("MustCombine of %d values panicked with %v", values.Count(), err)
 				}
 			}()
-			collect.MustCombine(collect.Of("a", "b"), values).All()
+			collect.MustCombine(collect.Of("a", "b"), values).ToMap()
 		}()
 	}
 }

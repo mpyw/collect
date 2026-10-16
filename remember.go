@@ -31,11 +31,11 @@ func (c Collection[T]) Remember() Collection[T] {
 // Remember returns a collection that reads the source once, and keeps each
 // pair it reads, as [Collection.Remember] does.
 func (c KeyedCollection[K, V]) Remember() KeyedCollection[K, V] {
-	// Not a Collection[Pair[K, V]]: a method of KeyedCollection that names
-	// one is an instantiation cycle, through Collection.KeyBy.
-	r := &rememberState[Pair[K, V]]{source: func(yield func(Pair[K, V]) bool) {
+	// Not a Collection[Entry[K, V]]: a method of KeyedCollection that names
+	// one, rather than pin it, is an instantiation cycle.
+	r := &rememberState[Entry[K, V]]{source: func(yield func(Entry[K, V]) bool) {
 		for k, v := range c.Seq() {
-			if !yield(Pair[K, V]{k, v}) {
+			if !yield(Entry[K, V]{k, v}) {
 				return
 			}
 		}
@@ -43,7 +43,7 @@ func (c KeyedCollection[K, V]) Remember() KeyedCollection[K, V] {
 	return KeyedCollection[K, V]{seq: func(yield func(K, V) bool) {
 		for i := 0; ; i++ {
 			p, ok := r.at(i)
-			if !ok || !yield(p.First, p.Second) {
+			if !ok || !yield(p.Key, p.Value) {
 				return
 			}
 		}

@@ -36,13 +36,13 @@ func TestMustEnsureStopsEarly(t *testing.T) {
 }
 
 func ExampleKeyedCollection_MustEnsure() {
-	fmt.Println(collect.FromMap(map[string]any{"a": 1}).MustEnsure[int]().All())
+	fmt.Println(collect.FromMap(map[string]any{"a": 1}).MustEnsure[int]().ToMap())
 	// Output: map[a:1]
 }
 
 func TestKeyedMustEnsure(t *testing.T) {
 	assertPanicsWith(t, collect.ErrUnexpectedValue, func() {
-		collect.Of[any]("x").Keyed().MustEnsure[int]().All()
+		collect.Of[any]("x").Keyed().MustEnsure[int]().ToMap()
 	})
 	assertStopsEarly2(t, endless().Keyed().MustEnsure[int]().Seq())
 }

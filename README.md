@@ -267,12 +267,13 @@ It has every method of [`Collection`](https://pkg.go.dev/github.com/mpyw/collect
 Its functions take the key first, as [`maps.All`](https://pkg.go.dev/maps#All) yields it.
 A method that returns a value returns the pair instead: [`First()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.First) is `(K, V, bool)`.
 It also has the methods of keys: [`Get`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Get), [`Has`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Has), [`Only`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Only), [`Except`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Except), [`FlipBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.FlipBy), [`Union`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Union), [`Replace`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Replace), [`DiffKeys`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.DiffKeys), [`SortKeysBy`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.SortKeysBy) and more.
-[`collect.Pairs(k)`](https://pkg.go.dev/github.com/mpyw/collect#Pairs) returns its pairs in order, as a [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) of [`Pair`](https://pkg.go.dev/github.com/mpyw/collect#Pair)s, with every repeated key.
+[`Entries()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Entries) returns its pairs in order, as a [`Collection`](https://pkg.go.dev/github.com/mpyw/collect#Collection) of [`Entry`](https://pkg.go.dev/github.com/mpyw/collect#Entry) values, with every repeated key.
 
 > [!NOTE]
 > A key may come more than once, as in an [`iter.Seq2`](https://pkg.go.dev/iter#Seq2).
 > [`Count()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Count) and [`Keys()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Keys) see each one, and [`Get`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Get) returns the first value of a key.
-> [`All()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.All) returns a `map[K]V`, so the last value of a key wins.
+> [`ToMap()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.ToMap) returns a `map[K]V`, so it has no order, and the last value of a key wins.
+> [`Entries().All()`](https://pkg.go.dev/github.com/mpyw/collect#KeyedCollection.Entries) keeps the order and every pair.
 
 ## Nested collections
 
@@ -296,7 +297,7 @@ quads.MustFirst().MustFirst().All() // [1 2]
 > A method of [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) cannot return [`Collection[Collection[T]]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) in Go.
 > The compiler reports an "instantiation cycle" ([golang/go#80172](https://github.com/golang/go/issues/80172)).
 > The type parameter `C` avoids that, and the result is the same type.
-> [`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin) return [`Pair`](https://pkg.go.dev/github.com/mpyw/collect#Pair)s the same way.
+> [`Zip`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Zip) and [`CrossJoin`](https://pkg.go.dev/github.com/mpyw/collect#Collection.CrossJoin) return [`Entry`](https://pkg.go.dev/github.com/mpyw/collect#Entry) values the same way.
 
 ## JSON
 
@@ -320,7 +321,7 @@ b, _ := json.Marshal(collect.Of("x", "y").Keyed())
 | `fmt.Println(c)`, `==` and [`reflect.DeepEqual`](https://pkg.go.dev/reflect#DeepEqual) see a function, not the values | Compare [`c.All()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.All), and range over [`c.Seq()`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Seq) |
 | A key that is `comparable` but holds a slice in an interface, such as `any`, panics in a map | Return a hashable key from the key function |
 | [`FlatMap(collect.Of)`](https://pkg.go.dev/github.com/mpyw/collect#Collection.FlatMap) does not compile, as [`Of`](https://pkg.go.dev/github.com/mpyw/collect#Of) is variadic | Pass [`collect.FromSlice`](https://pkg.go.dev/github.com/mpyw/collect#FromSlice) |
-| Your own generic type with a method that returns itself over [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) is an instantiation cycle too | Make it a function, as [`Pairs`](https://pkg.go.dev/github.com/mpyw/collect#Pairs) is |
+| Your own generic type with a method that returns itself over [`Collection[T]`](https://pkg.go.dev/github.com/mpyw/collect#Collection) is an instantiation cycle too | Pin a type parameter, as [`Entries`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Entries) does |
 
 ## Differences from Laravel
 
@@ -341,7 +342,7 @@ collect([10, 11, 12])
 </td>
 <td>
 
-[`Filter`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Filter), [`Keyed`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed)
+[`Filter`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Filter), [`Keyed`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Keyed), [`Entries`](https://pkg.go.dev/github.com/mpyw/collect#Collection.Entries)
 
 ```go
 collect.Of(10, 11, 12).
@@ -351,8 +352,9 @@ collect.Of(10, 11, 12).
 
 collect.Of(10, 11, 12).Keyed().
 	Filter(func(_, v int) bool { return v > 10 }).
+	Entries().
 	All()
-// map[1:11 2:12]
+// [{1 11} {2 12}]
 ```
 
 </td>
@@ -1079,7 +1081,7 @@ Go has no argument spread
 </td>
 <td>
 
-Take a struct or a [`Pair`](https://pkg.go.dev/github.com/mpyw/collect#Pair)
+Take a struct or an [`Entry`](https://pkg.go.dev/github.com/mpyw/collect#Entry)
 
 </td>
 </tr>

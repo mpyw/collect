@@ -29,7 +29,7 @@ func TestEnsureError(t *testing.T) {
 func ExampleKeyedCollection_Ensure() {
 	c, err := collect.FromMap(map[string]any{"a": 1}).Ensure[int]()
 
-	fmt.Println(c.All(), err)
+	fmt.Println(c.ToMap(), err)
 	// Output: map[a:1] <nil>
 }
 

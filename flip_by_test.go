@@ -11,7 +11,7 @@ import (
 func ExampleKeyedCollection_FlipBy() {
 	c := collect.FromMap(map[string]string{"name": "taylor", "framework": "laravel"})
 
-	fmt.Println(c.FlipBy(collect.Identity).All())
+	fmt.Println(c.FlipBy(collect.Identity).ToMap())
 	// Output: map[laravel:framework taylor:name]
 }
 

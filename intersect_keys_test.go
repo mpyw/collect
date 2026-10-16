@@ -12,7 +12,7 @@ func ExampleKeyedCollection_IntersectKeys() {
 	c := keyedOf([]string{"serial", "type", "year"}, []any{"UX301", "screen", 2009})
 	got := c.IntersectKeys(keyedOf([]string{"reference", "type", "year"}, []any{"UX404", "tab", 2011}))
 
-	fmt.Println(got.All())
+	fmt.Println(got.ToMap())
 	// Output: map[type:screen year:2009]
 }
 

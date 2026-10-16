@@ -12,10 +12,10 @@ import (
 
 // Laravel's examples of countBy.
 func ExampleCollection_CountBy() {
-	fmt.Println(collect.Of(1, 2, 2, 2, 3).CountBy(collect.Identity).All())
+	fmt.Println(collect.Of(1, 2, 2, 2, 3).CountBy(collect.Identity).ToMap())
 
 	domain := func(email string) string { return email[strings.Index(email, "@")+1:] }
-	fmt.Println(collect.Of("alice@gmail.com", "bob@yahoo.com", "carlos@gmail.com").CountBy(domain).All())
+	fmt.Println(collect.Of("alice@gmail.com", "bob@yahoo.com", "carlos@gmail.com").CountBy(domain).ToMap())
 	// Output:
 	// map[1:1 2:3 3:1]
 	// map[gmail.com:2 yahoo.com:1]
@@ -32,7 +32,7 @@ func TestCountByStopsEarly(t *testing.T) {
 func ExampleKeyedCollection_CountBy() {
 	c := collect.FromSeq2(slices.All([]string{"apple", "avocado", "banana"}))
 
-	fmt.Println(c.CountBy(func(_ int, s string) string { return s[:1] }).All())
+	fmt.Println(c.CountBy(func(_ int, s string) string { return s[:1] }).ToMap())
 	// Output: map[a:2 b:1]
 }
 

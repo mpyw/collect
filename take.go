@@ -41,13 +41,13 @@ func (c KeyedCollection[K, V]) Take(n int) KeyedCollection[K, V] {
 	if n < 0 {
 		return KeyedCollection[K, V]{seq: func(yield func(K, V) bool) {
 			// takeLast reads to the end, so yield never returns false.
-			pairs := func(yield func(Pair[K, V]) bool) {
+			pairs := func(yield func(Entry[K, V]) bool) {
 				for k, v := range c.Seq() {
-					yield(Pair[K, V]{k, v})
+					yield(Entry[K, V]{k, v})
 				}
 			}
 			for _, p := range takeLast(pairs, n) {
-				if !yield(p.First, p.Second) {
+				if !yield(p.Key, p.Value) {
 					return
 				}
 			}

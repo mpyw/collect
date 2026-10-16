@@ -50,7 +50,7 @@ func TestTakeReadsNoMore(t *testing.T) {
 			t.Errorf("Take(%d) read %d values", n, *read)
 		}
 		seq, read = counted()
-		collect.FromSeq(seq).Keyed().Take(n).All()
+		collect.FromSeq(seq).Keyed().Take(n).ToMap()
 		if *read != n {
 			t.Errorf("Keyed().Take(%d) read %d values", n, *read)
 		}

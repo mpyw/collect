@@ -10,7 +10,7 @@ import (
 // Laravel's example of crossJoin.
 func ExampleCollection_CrossJoin() {
 	for p := range collect.Of(1, 2).CrossJoin(collect.Of("a", "b")).Seq() {
-		fmt.Println(p.First, p.Second)
+		fmt.Println(p.Key, p.Value)
 	}
 	// Output:
 	// 1 a

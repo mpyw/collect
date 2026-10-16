@@ -1,18 +1,9 @@
 package collect
 
-import (
-	"maps"
-	"slices"
-)
+import "slices"
 
 // All reads the collection into a new slice. It is Laravel's all. Note that
 // [slices.All] is an iterator: here, [Collection.Seq] is.
 func (c Collection[T]) All() []T {
 	return slices.Collect(c.Seq())
-}
-
-// All reads the collection into a new map. When a key comes more than
-// once, its last value is kept.
-func (c KeyedCollection[K, V]) All() map[K]V {
-	return maps.Collect(c.Seq())
 }

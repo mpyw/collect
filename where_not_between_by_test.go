@@ -29,7 +29,7 @@ func TestWhereNotBetweenByStopsEarly(t *testing.T) {
 func ExampleKeyedCollection_WhereNotBetweenBy() {
 	c := collect.FromMap(map[string]int{"desk": 200, "chair": 80, "door": 100})
 
-	fmt.Println(c.WhereNotBetweenBy(func(_ string, price int) int { return price }, 100, 200).All())
+	fmt.Println(c.WhereNotBetweenBy(func(_ string, price int) int { return price }, 100, 200).ToMap())
 	// Output: map[chair:80]
 }
 

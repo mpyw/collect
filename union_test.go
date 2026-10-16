@@ -12,7 +12,7 @@ func ExampleKeyedCollection_Union() {
 	c := keyedOf([]int{1, 2}, []string{"a", "b"}).
 		Union(keyedOf([]int{3, 1}, []string{"c", "b"}))
 
-	fmt.Println(c.All())
+	fmt.Println(c.ToMap())
 	// Output: map[1:a 2:b 3:c]
 }
 

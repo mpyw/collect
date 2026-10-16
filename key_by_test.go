@@ -33,7 +33,7 @@ func ExampleKeyedCollection_KeyBy() {
 	c := collect.FromMap(map[string]string{"a": "apple"}).
 		KeyBy(func(k, v string) string { return strings.ToUpper(k) })
 
-	fmt.Println(c.All())
+	fmt.Println(c.ToMap())
 	// Output: map[A:apple]
 }
 

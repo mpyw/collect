@@ -15,7 +15,7 @@ func ExampleCollection_MapWithKeys() {
 		person{"Jane", "Marketing", "jane@example.com"},
 	).MapWithKeys(func(p person) (string, string) { return p.Email, p.Name })
 
-	fmt.Println(byEmail.All())
+	fmt.Println(byEmail.ToMap())
 	// Output: map[jane@example.com:Jane john@example.com:John]
 }
 
@@ -23,7 +23,7 @@ func ExampleKeyedCollection_MapWithKeys() {
 	ages := collect.FromMap(map[string]int{"Alice": 31})
 	byAge := ages.MapWithKeys(func(name string, age int) (int, string) { return age, name })
 
-	fmt.Println(byAge.All())
+	fmt.Println(byAge.ToMap())
 	// Output: map[31:Alice]
 }
 

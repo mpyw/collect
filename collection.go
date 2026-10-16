@@ -43,7 +43,7 @@ type Collection[T any] struct {
 // [FromSeq2] and [FromMap] make one from the standard library's types.
 //
 // It is a sequence of pairs, not a map: a key may come more than once.
-// Only [KeyedCollection.All] collapses them, as a map does.
+// Only [KeyedCollection.ToMap] collapses them, as a map does.
 type KeyedCollection[K comparable, V any] struct {
 	seq iter.Seq2[K, V]
 }
@@ -106,11 +106,14 @@ type Number interface {
 		~float32 | ~float64
 }
 
-// Pair holds two values. [Collection.Zip] and [Collection.CrossJoin] pair
-// the values of two collections, and [Pairs] pairs each key with its value.
-type Pair[A, B any] struct {
-	First  A
-	Second B
+// Entry holds a key and its value, as an entry of an ECMAScript Map does.
+// [KeyedCollection.Entries] returns the entries of a keyed collection, and
+// [Collection.Entries] those of a collection with its indexes as keys.
+// [Collection.Zip] and [Collection.CrossJoin] also pair a value of one
+// collection, as Key, with a value of another, as Value.
+type Entry[K, V any] struct {
+	Key   K
+	Value V
 }
 
 var (

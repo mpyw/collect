@@ -12,7 +12,7 @@ func ExampleKeyedCollection_DiffAssocBy() {
 	c := keyedOf([]string{"color", "type", "remain"}, []any{"orange", "fruit", 6})
 	got := c.DiffAssocBy(keyedOf([]string{"color", "type", "used"}, []any{"yellow", "fruit", 6}), collect.Identity)
 
-	fmt.Println(got.All())
+	fmt.Println(got.ToMap())
 	// Output: map[color:orange remain:6]
 }
 

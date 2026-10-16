@@ -21,13 +21,13 @@ func (c Collection[T]) SortFunc(cmp func(a, b T) int) Collection[T] {
 // [Collection.SortFunc] sorts values.
 func (c KeyedCollection[K, V]) SortFunc(cmp func(ak K, av V, bk K, bv V) int) KeyedCollection[K, V] {
 	return KeyedCollection[K, V]{seq: func(yield func(K, V) bool) {
-		var pairs []Pair[K, V]
+		var pairs []Entry[K, V]
 		for k, v := range c.Seq() {
-			pairs = append(pairs, Pair[K, V]{k, v})
+			pairs = append(pairs, Entry[K, V]{k, v})
 		}
-		slices.SortStableFunc(pairs, func(a, b Pair[K, V]) int { return cmp(a.First, a.Second, b.First, b.Second) })
+		slices.SortStableFunc(pairs, func(a, b Entry[K, V]) int { return cmp(a.Key, a.Value, b.Key, b.Value) })
 		for _, p := range pairs {
-			if !yield(p.First, p.Second) {
+			if !yield(p.Key, p.Value) {
 				return
 			}
 		}

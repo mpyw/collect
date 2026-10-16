@@ -11,7 +11,7 @@ import (
 // Laravel's example of combine.
 func ExampleCombine() {
 	c, err := collect.Combine(collect.Of("name", "age"), collect.Of[any]("George", 29))
-	fmt.Println(c.All(), err)
+	fmt.Println(c.ToMap(), err)
 
 	_, err = collect.Combine(collect.Of("name", "age"), collect.Of[any]("George"))
 	fmt.Println(err)

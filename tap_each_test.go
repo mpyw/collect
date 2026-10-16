@@ -21,7 +21,7 @@ func ExampleCollection_TapEach() {
 }
 
 func ExampleKeyedCollection_TapEach() {
-	collect.Of("a").Keyed().TapEach(func(i int, s string) { fmt.Println(i, s) }).All()
+	collect.Of("a").Keyed().TapEach(func(i int, s string) { fmt.Println(i, s) }).ToMap()
 	// Output: 0 a
 }
 
@@ -34,7 +34,7 @@ func TestTapEach(t *testing.T) {
 	assertEqual(t, c.Take(2).All(), []int{1, 2})
 	assertEqual(t, seen, []int{1, 2})
 	var keys []int
-	collect.Of("a", "b").Keyed().TapEach(func(k int, _ string) { keys = append(keys, k) }).All()
+	collect.Of("a", "b").Keyed().TapEach(func(k int, _ string) { keys = append(keys, k) }).ToMap()
 	assertEqual(t, keys, []int{0, 1})
 }
 

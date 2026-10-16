@@ -28,7 +28,7 @@ func TestWhereNotInByStopsEarly(t *testing.T) {
 func ExampleKeyedCollection_WhereNotInBy() {
 	c := collect.FromMap(map[string]int{"desk": 200, "chair": 100, "door": 150})
 
-	fmt.Println(c.WhereNotInBy(func(_ string, price int) int { return price }, 100, 200).All())
+	fmt.Println(c.WhereNotInBy(func(_ string, price int) int { return price }, 100, 200).ToMap())
 	// Output: map[door:150]
 }
 

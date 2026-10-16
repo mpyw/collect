@@ -67,7 +67,7 @@ func TestPartitionAfterPanic(t *testing.T) {
 	})
 	func() {
 		defer func() { _ = recover() }()
-		kin.All()
+		kin.ToMap()
 	}()
 	assertPairs(t, kin, []int{0, 1}, []int{1, 2})
 }

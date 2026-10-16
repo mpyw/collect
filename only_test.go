@@ -11,7 +11,7 @@ import (
 func ExampleKeyedCollection_Only() {
 	c := keyedOf([]string{"product_id", "name", "price", "discount"}, []any{1, "Desk", 100, false})
 
-	fmt.Println(c.Only("product_id", "name").All())
+	fmt.Println(c.Only("product_id", "name").ToMap())
 	// Output: map[name:Desk product_id:1]
 }
 

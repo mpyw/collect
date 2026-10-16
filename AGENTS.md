@@ -15,8 +15,8 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 
 ### Types and the instantiation cycle
 
-- A method whose result nests the receiver's type pins a type parameter instead of naming the nested type. `Chunk` is `Chunk[C interface{ Collection[T] }](size int) Collection[C]`, and converts each chunk with `C(...)`. Go infers `C`, so callers never write it. `GroupBy`, `ChunkWhile`, `ChunkBy`, `Sliding`, `Split` and `SplitIn` do the same, and `Zip` and `CrossJoin` pin `P interface{ Pair[T, U] }`.
-- Never name a nested type in a method, in its signature or its body: `Collection[Collection[T]]`, or `Collection[Pair[K, V]]` in a method of `KeyedCollection`. It is an "instantiation cycle" (golang/go#80172): the compiler instantiates every method of the nested type, then of a deeper one, without end. A pinned `C` is instantiated only by a call, so only as deep as calls go. Package functions and the caller's code are not checked this way.
+- A method whose result nests the receiver's type pins a type parameter instead of naming the nested type. `Chunk` is `Chunk[C interface{ Collection[T] }](size int) Collection[C]`, and converts each chunk with `C(...)`. Go infers `C`, so callers never write it. `GroupBy`, `ChunkWhile`, `ChunkBy`, `Sliding`, `Split` and `SplitIn` do the same, and `Zip`, `CrossJoin` and `Entries` pin `E interface{ Entry[...] }`.
+- Never name a nested type in a method, in its signature or its body: `Collection[Collection[T]]`, or `Collection[Entry[K, V]]` in a method of `KeyedCollection`. It is an "instantiation cycle" (golang/go#80172): the compiler instantiates every method of the nested type, then of a deeper one, without end. A pinned `C` is instantiated only by a call, so only as deep as calls go. Package functions and the caller's code are not checked this way.
 - A method must not call a pinned method of the package's own types either, such as `c.Chunk(n)` inside `SplitIn`. The call instantiates `C` as the nested type, which is the same cycle. Loop by hand. To keep pairs, use `pairsOf` and `keyedOf` in `collection.go`, or a `rememberState[Pair[K, V]]`, which has no methods that lead back.
 - `Collection[T any]` cannot add a constraint to `T` in a method. A method that needs numbers, an order or equality takes a key function with its own type parameter, such as `SumBy[N Number](f func(T) N)`. Callers pass `Identity` for Laravel's form with no key. Do not use `any` as a map key to get equality: it compiles for every `T` and panics on a slice.
 
@@ -30,9 +30,10 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 | Only on | Methods | Why |
 | --- | --- | --- |
 | `Collection` | `Keyed` | A `KeyedCollection` has keys already |
+| `Collection` | `All` | A `KeyedCollection` has `ToMap`, whose name says a map has no order, and `Entries().All()` in order |
 | `Collection` | `Pad` | A value it adds has no key |
 | `Collection` | `Zip`, `CrossJoin` | A pair has no key, and Laravel drops the keys too. Call `Values()` first |
-| `KeyedCollection` | `Keys`, `Values`, `Get`, `MustGet`, `Has`, `HasAny`, `Only`, `Except`, `FlipBy`, `Union`, `Replace`, `DiffKeys`, `IntersectKeys`, `DiffAssocBy`, `IntersectAssocBy`, `SortKeysBy`, `SortKeysByDesc`, `SortKeysFunc` | They work on keys. Call `Keyed()` first |
+| `KeyedCollection` | `Keys`, `Values`, `Get`, `MustGet`, `Has`, `HasAny`, `Only`, `Except`, `FlipBy`, `Union`, `Replace`, `DiffKeys`, `IntersectKeys`, `DiffAssocBy`, `IntersectAssocBy`, `SortKeysBy`, `SortKeysByDesc`, `SortKeysFunc`, `ToMap` | They work on keys. Call `Keyed()` first |
 
 ### Results and failures
 
@@ -58,7 +59,7 @@ Lazy, chainable collections for Go 1.27, a port of Laravel's LazyCollection. See
 - A method whose function compares two values ends in `Func`, as in the standard library: `sort($callback)` is `SortFunc`, `diffUsing` is `DiffFunc`.
 - `By` is only for a method that takes a key function. Laravel's `intersectByKeys` is `IntersectKeys`, as `diffKeys` is `DiffKeys`.
 - A method that takes another collection takes it first, as Laravel does: `DiffBy(other, f)`, `DiffFunc(other, eq)`. Otherwise the function comes first: `WhereInBy(f, keys...)`, `ImplodeBy(f, sep)`.
-- A function that returns a collection of a `KeyedCollection`'s own pairs is a package function, as `Pairs` is. As a method, it would be an instantiation cycle.
+- A method that returns a collection of a `KeyedCollection`'s own pairs pins a type parameter too, as `Entries` does: `Entries[E interface{ Entry[K, V] }]() Collection[E]`.
 
 ### JSON
 
@@ -86,7 +87,7 @@ Read the matching one in `.agents/skills/` before you start.
 
 | File | Holds |
 | --- | --- |
-| `collection.go` | Core and shared: every type, the sources `Of` and `From*`, `Identity`, `Number`, `Pair`, the `Err*` values, and helpers several files use |
+| `collection.go` | Core and shared: every type, the sources `Of` and `From*`, `Identity`, `Value`, `Key`, `Number`, `Entry`, the `Err*` values, and helpers several files use |
 | `<method>.go` | One method, for every type that has it: `map.go` holds the `Map` of `Collection` and of `KeyedCollection` |
 | `<method>_test.go` | The examples and tests of that method, for every type |
 | `fixture_test.go` | Test helpers that several test files use, each `//declscope:shared` |
@@ -118,7 +119,7 @@ declscope runs with `.declscope.yaml` (`qualify: ondemand`, `exported: true`).
 | `MustFirstWhere`, `MustMax` and other `Must` methods for every `(T, bool)` | `Filter(f).MustFirst()` does the first. For the rest, the caller knows whether the collection is empty. Add one only when it is asked for. |
 | An eager `Collection` beside a lazy one, like Laravel | Each method would be written twice, and no interface can share them: interface methods cannot have type parameters. `All()` reads a lazy one into a slice. |
 | Laravel's keys on every collection | Go has no ordered map, and the kept keys are a well-known trap (`values()` after `filter`). Keys are opt-in instead: `Keyed()` and `KeyBy()` return a `KeyedCollection` over `iter.Seq2`, and `Values()` drops them. |
-| Unique keys in a `KeyedCollection` | A lazy sequence would have to remember every key it passed. Pairs flow as they come, and `All()` collapses them into a map. |
+| Unique keys in a `KeyedCollection` | A lazy sequence would have to remember every key it passed. Pairs flow as they come, and `ToMap()` collapses them into a map. |
 | `MarshalJSON` of `encoding/json` | Go 1.27's `encoding/json` calls `MarshalJSONTo`, so `MarshalJSON` never ran. `MarshalJSONTo` also streams the values as they are read. |
 | A single `From`, for `iter.Seq` only | The keyed collection needs its own source, and `From2` reads badly. `FromSeq` and `FromSeq2` follow `iter.Seq` and `iter.Seq2`. |
 | `Unkeyed()` as the name of the way back from `Keyed()` | `Values()` pairs with `Keys()`, as `maps.Keys` and `maps.Values` do, and is Laravel's name. |
@@ -133,6 +134,8 @@ declscope runs with `.declscope.yaml` (`qualify: ondemand`, `exported: true`).
 | `sync.Once` in `Partition` | A panic during the read counted as done, so later reads returned part of the values. A mutex and a flag set only when the read ends keep nothing from a panic. |
 | `Remember` taking a source's panic as its end | iter.Pull reports the end after a panic, so later reads returned the kept values only. It keeps the panic, and repeats it. |
 | `RangeStep` stopping when `to - n < step` | `to - n` overflows for a signed span past the type's maximum, and a float's last value was lost to rounding. It adds the step, then stops when the next number wraps, does not change, or passes `to`. |
+| `KeyedCollection.All` returning `map[K]V` | The name said "all", but a map drops the order and every repeated key: sorting, then `All()`, gave an unsorted map. It is `ToMap`, and `Entries().All()` keeps both. |
+| `Pairs`, a package function, and `Pair{First, Second}` | A method can return the pairs lazily by pinning a type parameter, so it is `Entries`, after ECMAScript. `Entry{Key, Value}` names what a pair holds. |
 | `Tap` | It called its function with the collection when called. Any look at the whole, such as `Count()`, read the source early. A source that can be read once was then empty for the rest of the chain. `TapEach` sees each value lazily, and `Pipe` calls a function in a chain. |
 | `ReduceInto` | It passed the result by pointer, as Laravel passes it by reference, because PHP copies arrays. A Go map or slice shares its contents, so `Reduce` does the same with no `(*m)[k]`. |
 | `Pluck("user.name")` and other string paths | They need reflection, and lose the types. Pass a function to `Map`. |

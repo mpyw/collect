@@ -36,19 +36,19 @@ func (c Collection[T]) Partition(match func(T) bool) (Collection[T], Collection[
 // when either result is first read, and keeps both, as
 // [Collection.Partition] does.
 func (c KeyedCollection[K, V]) Partition(match func(K, V) bool) (KeyedCollection[K, V], KeyedCollection[K, V]) {
-	s := &partitionState[Pair[K, V]]{}
+	s := &partitionState[Entry[K, V]]{}
 	split := func() {
-		s.split(func(add func(Pair[K, V], bool)) {
+		s.split(func(add func(Entry[K, V], bool)) {
 			for k, v := range c.Seq() {
-				add(Pair[K, V]{k, v}, match(k, v))
+				add(Entry[K, V]{k, v}, match(k, v))
 			}
 		})
 	}
-	half := func(pairs *[]Pair[K, V]) KeyedCollection[K, V] {
+	half := func(pairs *[]Entry[K, V]) KeyedCollection[K, V] {
 		return KeyedCollection[K, V]{seq: func(yield func(K, V) bool) {
 			split()
 			for _, p := range *pairs {
-				if !yield(p.First, p.Second) {
+				if !yield(p.Key, p.Value) {
 					return
 				}
 			}
